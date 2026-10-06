@@ -40,6 +40,17 @@ a:hover { color: var(--color-rose); }
 }
 }
 
-.prose-lm p { margin: 0 0 0.75rem; max-width: 68ch; color: var(--color-ink-2); }
-.prose-lm h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; }
-.prose-lm ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+/* Текст страниц из админки (Lexical → HTML). */
+.prose-lm { max-width: 72ch; }
+.prose-lm p { margin: 0 0 0.85rem; color: var(--color-ink-2); line-height: 1.6; }
+.prose-lm h2 { font-size: 1.45rem; margin: 2rem 0 0.65rem; }
+.prose-lm h3 { font-family: var(--font-sans); font-size: 1.05rem; font-weight: 600; margin: 1.4rem 0 0.4rem; }
+.prose-lm > div > :first-child { margin-top: 0; }
+.prose-lm ul, .prose-lm ol { padding-left: 1.25rem; margin: 0 0 0.85rem; color: var(--color-ink-2); line-height: 1.6; }
+.prose-lm ul { list-style: disc; }
+.prose-lm ol { list-style: decimal; }
+.prose-lm li { margin-bottom: 0.35rem; padding-left: 0.15rem; }
+.prose-lm li::marker { color: var(--color-rose); }
+.prose-lm strong { color: var(--color-ink); font-weight: 600; }
+.prose-lm a { color: var(--color-rose); text-decoration: underline; text-decoration-color: var(--color-petal); text-underline-offset: 3px; }
+.prose-lm a:hover { text-decoration-color: currentColor; }

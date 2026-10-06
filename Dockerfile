@@ -19,4 +19,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 CMD cur
 # SEED_ON_START=1 — один раз на первом деплое: создаёт сюжеты, жанры, подборки,
 # страницы и админа (SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD). Потом переменную убрать:
 # сид перезаписывает поля сюжетов и страниц значениями из src/seed/structure.ts.
-CMD ["sh", "-c", "npm run migrate && if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && npm run start"]
+# CONTENT_ON_START=1 — заливает тексты из content/ в пустые поля (правки из админки не трогает),
+# можно держать включённым постоянно.
+CMD ["sh", "-c", "npm run migrate && if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content; fi && npm run start"]

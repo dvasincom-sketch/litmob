@@ -45,6 +45,7 @@ Apps → Создать → **Dockerfile** → репозиторий `dvasincom
 | `S3_*` | из шага 2 |
 | `SEED_ON_START` | `1` — **только на первый деплой** |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | почта и **новый** пароль админа |
+| `CONTENT_ON_START` | `1` — заливает тексты из `content/` в пустые поля страниц (правки из админки не трогает), можно не выключать |
 | `SMTP_*`, `EMAIL_FROM_*` | по желанию (письма сброса пароля) |
 
 При старте контейнер выполняет `npm run migrate` → (если `SEED_ON_START=1`) `npm run seed` → `npm run start`.
@@ -88,3 +89,10 @@ Apps → Создать → **Dockerfile** → репозиторий `dvasincom
 
 `git push` в `main` → Timeweb пересобирает образ, миграции применяются на старте.
 Новая миграция: `npm run migrate:create <имя>` локально, закоммитить файл и запись в `src/migrations/index.ts`.
+
+## Тексты страниц
+
+Статьи и тексты сюжетов/жанров лежат в `content/pages/*.md` и `content/landing/*.md`
+(формат и правила — в `src/seed/content.ts` и `docs/content-brief.md`).
+С `CONTENT_ON_START=1` они попадают в базу при старте контейнера — только в пустые поля.
+Локально: `npm run seed:content` (или `-- --force`, чтобы перезаписать текст из файлов).
