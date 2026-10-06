@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { trendLabel } from '@/lib/trend'
+import { TropeTile } from '@/components/TropeTile'
 import type { Metadata } from 'next'
 import { PageHero } from '@/components/PageHero'
 import { Wrap } from '@/components/Wrap'
-import { getAllFamilies, getFamilyTropes } from '@/lib/data'
+import { getAllFamilies, getBookCounts, getFamilyTropes } from '@/lib/data'
 import { SITE_URL } from '@/lib/payload'
 
 export const metadata: Metadata = {
@@ -14,24 +14,23 @@ export const metadata: Metadata = {
 
 export default async function TropesCatalog() {
   const families = await getAllFamilies()
-  const groups = await Promise.all(families.map(async (f) => ({ f, tropes: await getFamilyTropes(f.id) })))
+  const [groups, counts] = await Promise.all([
+    Promise.all(families.map(async (f) => ({ f, tropes: await getFamilyTropes(f.id) }))),
+    getBookCounts('tropes'),
+  ])
   return (
     <>
       <PageHero crumbs={[{ label: 'Сюжеты', href: '/tropy/' }]} title="Тропы в книгах: каталог сюжетов" lead="Вы знаете, какую историю хотите, даже если не знаете названия. Выберите сюжет — покажем книги, аудио и серии по порядку." />
-      <Wrap className="flex flex-col gap-8 py-6 md:py-10">
+      <Wrap className="flex flex-col gap-10 py-8 md:gap-14 md:py-12">
         {groups.map(({ f, tropes }) => (
           <section key={f.id}>
-            <div className="mb-3 flex items-baseline justify-between gap-3">
+            <div className="mb-4 flex items-baseline md:mb-5 justify-between gap-3">
               <h2 className="text-[22px] md:text-[28px]"><Link href={f.path || '#'}>{f.title}</Link></h2>
               <Link href={f.path || '#'} className="text-sm font-semibold text-rose">Все</Link>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3.5">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
               {tropes.map((t) => (
-                <Link key={t.id} href={t.path || '#'} className="flex flex-col gap-1.5 rounded-[14px] border border-line bg-white p-3.5 md:p-[18px]">
-                  <span className="font-semibold leading-tight md:text-lg">{t.title}{t.adult ? ' · 18+' : ''}</span>
-                  {t.subtitle && <span className="text-xs text-muted md:text-sm">{t.subtitle}</span>}
-                  {trendLabel(t.growth) && <span className="self-start rounded-full bg-blush px-2 py-0.5 text-xs font-semibold text-rose">{trendLabel(t.growth)}</span>}
-                </Link>
+                <TropeTile key={t.id} href={t.path || '#'} title={t.title} subtitle={t.subtitle} growth={t.growth} adult={t.adult} count={counts.get(t.id) || { all: 0, audio: 0 }} />
               ))}
             </div>
           </section>

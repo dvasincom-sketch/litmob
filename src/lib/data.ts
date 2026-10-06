@@ -176,3 +176,30 @@ export const getApprovedEntries = cache(async (litmobId: Id) => {
 })
 
 export { idOf }
+
+export type BookCounts = Map<Id, { all: number; audio: number }>
+
+/** Сколько опубликованных книг (и из них с аудио) у каждого сюжета/жанра — одним запросом. */
+export const getBookCounts = cache(async (field: 'tropes' | 'genres'): Promise<BookCounts> => {
+  const payload = await getPayloadClient()
+  const res = await payload.find({
+    collection: 'books',
+    where: { published: { equals: true } },
+    select: { [field]: true, hasAudio: true } as never,
+    depth: 0,
+    limit: 0,
+    pagination: false,
+  })
+  const out: BookCounts = new Map()
+  for (const b of res.docs as unknown as Array<Record<string, unknown> & { hasAudio?: boolean }>) {
+    for (const v of (b[field] as unknown[]) || []) {
+      const id = idOf(v)
+      if (id == null) continue
+      const c = out.get(id) || { all: 0, audio: 0 }
+      c.all++
+      if (b.hasAudio) c.audio++
+      out.set(id, c)
+    }
+  }
+  return out
+})

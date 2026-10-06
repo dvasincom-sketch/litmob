@@ -1,24 +1,47 @@
 import Link from 'next/link'
-import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
-import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { GenreArt } from '@/components/GenreArt'
+import { PageHero } from '@/components/PageHero'
+import { Wrap } from '@/components/Wrap'
+import { getBookCounts } from '@/lib/data'
+import { plural } from '@/lib/home'
 import { getPayloadClient, SITE_URL } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'Жанры | Литмоб', alternates: { canonical: `${SITE_URL}/zhanr/` } }
+export const metadata: Metadata = {
+  title: 'Жанры книг и аудиокниг: любовное фэнтези, попаданцы, детективы | Литмоб',
+  description: 'Все жанры Литмоба: любовное и бытовое фэнтези, попаданки и попаданцы, академии магии, ЛитРПГ, боярка, детективы и аудиорассказы.',
+  alternates: { canonical: `${SITE_URL}/zhanr/` },
+}
 
 export default async function Genres() {
   const payload = await getPayloadClient()
-  const res = await payload.find({ collection: 'genres', where: { published: { equals: true }, parent: { exists: false } }, limit: 100, depth: 0, sort: 'title' })
+  const [res, counts] = await Promise.all([
+    payload.find({ collection: 'genres', where: { published: { equals: true }, parent: { exists: false }, adult: { not_equals: true } }, limit: 100, depth: 0, sort: '-monthlyVolume' }),
+    getBookCounts('genres'),
+  ])
   return (
-    <Wrap className="flex flex-col gap-6  py-6 md:py-10">
-      <Breadcrumbs items={[{ label: 'Жанры', href: '/zhanr/' }]} />
-      <h1 className="text-3xl">Жанры</h1>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {res.docs.map((g) => (
-          <Link key={g.id} href={g.path || '#'} className="rounded-2xl border border-line bg-white p-3 font-semibold no-underline">{g.title}</Link>
-        ))}
-      </div>
-    </Wrap>
+    <>
+      <PageHero crumbs={[{ label: 'Жанры', href: '/zhanr/' }]} title="Жанры" lead="От уютного бытового фэнтези до детективов. Внутри каждого жанра — сюжеты, серии по порядку и аудиоверсии." />
+      <Wrap className="py-8 md:py-12">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
+          {res.docs.map((g) => {
+            const c = counts.get(g.id)
+            return (
+              <Link key={g.id} href={g.path || '#'} className="group flex h-[240px] flex-col overflow-hidden rounded-2xl border border-line bg-white transition-colors hover:border-petal md:h-[268px]">
+                <GenreArt slug={g.slug || ''} className="h-[104px] w-full shrink-0 md:h-[124px]" />
+                <span className="flex flex-1 flex-col p-4 md:p-5">
+                  <span className="line-clamp-2 text-[15px] font-semibold leading-[1.25] text-ink md:text-lg">{g.title}</span>
+                  <span className="mt-1.5 line-clamp-2 text-xs leading-snug text-muted md:text-sm">{g.subtitle || ' '}</span>
+                  <span className="mt-auto truncate pt-2 text-xs text-muted">
+                    {c?.all ? `${c.all} ${plural(c.all, 'книга', 'книги', 'книг')}${c.audio ? ` · ${c.audio} в аудио` : ''}` : 'Скоро книги'}
+                  </span>
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      </Wrap>
+    </>
   )
 }

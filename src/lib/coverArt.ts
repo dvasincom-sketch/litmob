@@ -18,7 +18,7 @@ const FAMILY_MOTIF: Record<string, Motif> = {
 }
 
 /** [фон сверху, фон снизу, узор, текст] */
-const PALETTES: Record<Motif, [string, string, string, string][]> = {
+export const PALETTES: Record<Motif, [string, string, string, string][]> = {
   scales: [['#7A1F3D', '#3A1424', '#F2A7C3', '#FFF4F7'], ['#B23A5E', '#5A1A30', '#FFD3E0', '#FFFFFF'], ['#E9C7D2', '#C98BA0', '#7A1F3D', '#3A1424']],
   moon: [['#2E2350', '#120E26', '#C9B8FF', '#F3EEFF'], ['#4B3A7A', '#1E1638', '#F2A7C3', '#FFFFFF'], ['#DCCBE6', '#A98FC2', '#2E2350', '#20183A']],
   arches: [['#5B2A6E', '#2A1236', '#E8C98A', '#FFF7E8'], ['#8A4A6E', '#3E1A35', '#F5D9A8', '#FFFFFF'], ['#F0E1D2', '#D5B79A', '#5B2A6E', '#3A1830']],

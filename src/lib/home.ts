@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import type { Book, Collection, Genre, Narrator, Trope } from '@/payload-types'
 import { getPayloadClient } from './payload'
+import { getBookCounts } from './data'
 
 /** Данные главной одним заходом. */
 export const getHomeData = cache(async () => {
@@ -15,13 +16,7 @@ export const getHomeData = cache(async () => {
     payload.find({ collection: 'genres', where: { and: [pub, { parent: { exists: false } }, { adult: { not_equals: true } }] }, sort: '-monthlyVolume', limit: 8, depth: 1 }),
     payload.find({ collection: 'litmobs', where: { status: { in: ['recruiting', 'running', 'voting', 'finished'] } }, limit: 3, depth: 0 }),
   ])
-  const counts = await Promise.all(
-    wave1.docs.map(async (t) => {
-      const all = await payload.count({ collection: 'books', where: { and: [pub, { tropes: { in: [t.id] } }] } })
-      const aud = await payload.count({ collection: 'books', where: { and: [pub, { tropes: { in: [t.id] } }, { hasAudio: { equals: true } }] } })
-      return [t.id, { all: all.totalDocs, audio: aud.totalDocs }] as const
-    }),
-  )
+  const counts = await getBookCounts('tropes')
   const genreChildren = await Promise.all(
     genres.docs.map(async (g) => {
       const kids = await payload.find({ collection: 'genres', where: { and: [pub, { parent: { equals: g.id } }] }, limit: 6, depth: 0 })
@@ -39,7 +34,7 @@ export const getHomeData = cache(async () => {
     listening: (audioBooks.docs.length ? audioBooks.docs : newBooks.docs) as Book[],
     featured,
     tropes: wave1.docs as Trope[],
-    counts: new Map(counts),
+    counts,
     collections: collections.docs as Collection[],
     narrators: narrators.docs as Narrator[],
     genres: genres.docs as Genre[],

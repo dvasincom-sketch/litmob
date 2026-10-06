@@ -1,11 +1,11 @@
 import Link from 'next/link'
+import { TropeTile } from '@/components/TropeTile'
 import type { Audio } from '@/payload-types'
 import { BookTile, names } from '@/components/BookCard'
 import { Cover } from '@/components/Cover'
 import { PlayButton, type Track } from '@/components/Player'
 import { SectionHead, Wrap } from '@/components/Wrap'
 import { getHomeData, plural } from '@/lib/home'
-import { trendLabel } from '@/lib/trend'
 
 /**
  * Главная (вариант А). Порядок по важности для читательницы: что послушать
@@ -92,21 +92,10 @@ export default async function Home() {
       <section className="pt-7 md:pt-14">
         <Wrap>
           <SectionHead title="Выберите по сюжету" lead="Вы знаете, какую историю хотите, даже если не знаете названия." />
-          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3.5">
-            {d.tropes.slice(0, 9).map((t, i) => {
-              const c = d.counts.get(t.id) || { all: 0, audio: 0 }
-              const tr = trendLabel(t.growth)
-              return (
-                <Link key={t.id} href={t.path || '#'} className={`${i >= 6 ? 'hidden md:flex' : 'flex'} min-h-24 flex-col gap-1.5 rounded-[14px] border border-line bg-white p-3.5 md:p-[18px]`}>
-                  <span className="text-[15px] font-semibold leading-tight text-ink md:text-lg">{t.title}</span>
-                  {t.subtitle && <span className="text-xs text-muted md:text-sm">{t.subtitle}</span>}
-                  <span className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-xs text-muted">
-                    {c.all ? `${c.all} ${plural(c.all, 'книга', 'книги', 'книг')}${c.audio ? ` · ${c.audio} в аудио` : ''}` : 'Скоро книги'}
-                    {tr && <span className="rounded-full bg-blush px-2 py-0.5 font-semibold text-rose">{tr}</span>}
-                  </span>
-                </Link>
-              )
-            })}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+            {d.tropes.slice(0, 9).map((t, i) => (
+              <TropeTile key={t.id} href={t.path || '#'} title={t.title} subtitle={t.subtitle} growth={t.growth} count={d.counts.get(t.id) || { all: 0, audio: 0 }} className={i >= 6 ? 'max-md:hidden' : ''} />
+            ))}
           </div>
           <Link href="/tropy/" className="mt-3.5 flex h-12 items-center justify-center rounded-xl border border-petal bg-white font-semibold text-rose md:inline-flex md:px-6">
             Все {d.tropeTotal} {plural(d.tropeTotal, 'сюжет', 'сюжета', 'сюжетов')}
