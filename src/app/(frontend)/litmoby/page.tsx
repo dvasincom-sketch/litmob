@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Faq } from '@/components/Faq'
@@ -23,7 +24,7 @@ const FAQ = [
 export default async function Litmobs() {
   const list: any[] = await getLitmobs()
   return (
-    <div className="flex flex-col gap-6 pt-4">
+    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }]} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-3xl">Литмобы</h1>
@@ -43,6 +44,6 @@ export default async function Litmobs() {
         </div>
       )}
       <Faq items={FAQ} />
-    </div>
+    </Wrap>
   )
 }

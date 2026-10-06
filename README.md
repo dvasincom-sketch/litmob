@@ -24,7 +24,8 @@ npm install
 npm run db:local              # встроенный Postgres на 54329 (или: docker compose up -d db)
 # во втором терминале:
 npm run migrate               # применить миграции
-SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD=... npm run seed   # волна 1 + админ
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD=... npm run seed   # вся структура + админ
+npm run seed:demo             # вымышленные демо-книги для проверки дизайна (удалить: npm run seed:demo -- --remove)
 npm run dev                   # http://localhost:3000, админка — /admin
 ```
 

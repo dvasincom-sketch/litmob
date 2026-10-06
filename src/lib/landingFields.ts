@@ -24,6 +24,20 @@ export const pathField: Field = {
   admin: { position: 'sidebar', readOnly: true, description: 'Вычисляется автоматически.' },
 }
 
+export const customPathField: Field = {
+  name: 'customPath',
+  type: 'text',
+  label: 'Свой адрес',
+  admin: { position: 'sidebar', description: 'Если адрес вне своего раздела: /18/omegavers/, /audio/rasskazy/.' },
+}
+
+export const subtitleField: Field = {
+  name: 'subtitle',
+  type: 'text',
+  label: 'Подпись на плитке',
+  admin: { description: 'Под названием в каталоге: «После развода, с генералом, попаданка».' },
+}
+
 export const publishedField: Field = {
   name: 'published',
   type: 'checkbox',
@@ -85,7 +99,10 @@ export const computePath =
       data.parent !== undefined ? data.parent : (originalDoc?.parent as unknown) ?? null
     const pid = typeof parentId === 'object' && parentId ? (parentId as { id: number }).id : parentId
     const adult = data.adult ?? originalDoc?.adult ?? false
-    if (pid) {
+    const custom = data.customPath ?? originalDoc?.customPath
+    if (custom) {
+      data.path = joinPath(custom)
+    } else if (pid) {
       const parent = await req.payload.findByID({
         collection,
         id: pid as number,

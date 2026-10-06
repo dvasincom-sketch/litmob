@@ -1,11 +1,17 @@
 import * as migration_20261006_101311_init from './20261006_101311_init';
+import * as migration_20261006_104516_catalog_pages from './20261006_104516_catalog_pages';
 import * as migration_20261006_120000_unique_follows from './20261006_120000_unique_follows';
 
 export const migrations = [
   {
     up: migration_20261006_101311_init.up,
     down: migration_20261006_101311_init.down,
-    name: '20261006_101311_init'
+    name: '20261006_101311_init',
+  },
+  {
+    up: migration_20261006_104516_catalog_pages.up,
+    down: migration_20261006_104516_catalog_pages.down,
+    name: '20261006_104516_catalog_pages',
   },
   {
     up: migration_20261006_120000_unique_follows.up,

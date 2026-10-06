@@ -12,6 +12,8 @@ import { fileURLToPath } from 'url'
 import { Audio } from './collections/Audio'
 import { Books } from './collections/Books'
 import { Chapters } from './collections/Chapters'
+import { Collections } from './collections/Collections'
+import { Pages } from './collections/Pages'
 import { Follows } from './collections/Follows'
 import { Genres } from './collections/Genres'
 import { LitmobEntries, Litmobs } from './collections/Litmobs'
@@ -39,7 +41,7 @@ export default buildConfig({
     meta: { titleSuffix: ' · Литмоб' },
   },
   i18n: { supportedLanguages: { ru }, fallbackLanguage: 'ru' },
-  collections: [Tropes, Genres, Books, Chapters, Series, Authors, Narrators, Litmobs, LitmobEntries, Follows, Users, Media, Audio],
+  collections: [Tropes, Genres, Collections, Books, Chapters, Series, Authors, Narrators, Litmobs, LitmobEntries, Follows, Users, Pages, Media, Audio],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   email: process.env.SMTP_HOST
@@ -71,7 +73,7 @@ export default buildConfig({
   sharp,
   plugins: [
     seoPlugin({
-      collections: ['tropes', 'genres', 'books', 'series', 'authors', 'narrators', 'litmobs'],
+      collections: ['tropes', 'genres', 'collections', 'pages', 'books', 'series', 'authors', 'narrators', 'litmobs'],
       uploadsCollection: 'media',
       tabbedUI: false,
       generateTitle: ({ doc }: any) => `${doc?.h1 || doc?.title || doc?.name || ''} — Литмоб`,

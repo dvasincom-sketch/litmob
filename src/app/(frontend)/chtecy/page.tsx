@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getPayloadClient, SITE_URL } from '@/lib/payload'
@@ -14,7 +15,7 @@ export default async function Narrators() {
   const payload = await getPayloadClient()
   const res = await payload.find({ collection: 'narrators', where: { published: { equals: true } }, limit: 200, depth: 0, sort: 'name' })
   return (
-    <div className="flex flex-col gap-4 pt-4">
+    <Wrap className="flex flex-col gap-4  py-6 lg:py-10">
       <Breadcrumbs items={[{ label: 'Чтецы', href: '/chtecy/' }]} />
       <h1 className="text-3xl">Чтецы аудиокниг</h1>
       {res.docs.length === 0 ? <p className="text-muted">Скоро здесь появятся чтецы. Вы чтец? Напишите нам — подключим кабинет.</p> : (
@@ -27,6 +28,6 @@ export default async function Narrators() {
           ))}
         </div>
       )}
-    </div>
+    </Wrap>
   )
 }

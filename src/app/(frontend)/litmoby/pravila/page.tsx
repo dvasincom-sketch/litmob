@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Wrap } from '@/components/Wrap'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { SITE_URL } from '@/lib/payload'
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function Rules() {
   return (
-    <article className="prose-lm flex flex-col gap-2 pt-4">
+    <Wrap className="prose-lm flex flex-col gap-2  py-6 lg:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }, { label: 'Правила', href: '/litmoby/pravila/' }]} />
       <h1 className="text-3xl">Что такое литмоб и как участвовать</h1>
       <p>Литмоб — литературный флешмоб: несколько авторов пишут книги на один сюжет по общим правилам и в общие сроки.</p>
@@ -20,6 +21,6 @@ export default function Rules() {
       <p>Подайте заявку с синопсисом. Организатор одобряет участников; после старта соблюдайте график прод — так читатели остаются с литмобом.</p>
       <h2>Озвучка</h2>
       <p>Если организатор разрешил, чтецы площадки могут предложить озвучку. Условия чтец и автор согласуют напрямую на площадке.</p>
-    </article>
+    </Wrap>
   )
 }

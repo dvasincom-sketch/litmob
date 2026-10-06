@@ -42,6 +42,7 @@ export const Books: CollectionConfig = {
             { name: 'authors', type: 'relationship', relationTo: 'authors', hasMany: true, label: 'Авторы' },
             { name: 'narrators', type: 'relationship', relationTo: 'narrators', hasMany: true, label: 'Чтецы' },
             { name: 'cover', type: 'upload', relationTo: 'media', label: 'Обложка', admin: { description: 'Только с разрешения правообладателя.' } },
+            { name: 'coverTint', type: 'text', label: 'Цвет заглушки обложки', admin: { description: 'HEX, например #E9C7D2. Пока нет обложки — цветная плашка с сюжетом.' } },
             { name: 'about', type: 'richText', label: 'О чём книга (свой текст)', admin: { description: 'Не копия аннотации — свой текст без спойлеров.' } },
             { name: 'hook', type: 'text', label: 'Строка-крючок', admin: { description: 'Например: «Бывший пожалеет. ХЭ гарантирован».' } },
             {
@@ -144,6 +145,7 @@ export const Books: CollectionConfig = {
     pathField,
     publishedField,
     { name: 'publishedAt', type: 'date', label: 'Дата публикации', admin: { position: 'sidebar' } },
+    { name: 'isDemo', type: 'checkbox', label: 'Демо-данные', admin: { position: 'sidebar', description: 'Вымышленная книга для проверки дизайна. Удаляется командой seed:demo -- --remove.' } },
     { name: 'chapters', type: 'join', collection: 'chapters', on: 'book', label: 'Главы', defaultSort: 'order' },
   ],
   timestamps: true,

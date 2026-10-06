@@ -4,7 +4,9 @@
   "private": true,
   "description": "Литмоб — площадка книг и аудиокниг по сюжетам (тропам), литмобы авторов, профессиональная озвучка",
   "type": "module",
-  "engines": { "node": ">=20.9" },
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=3072\" next build",
@@ -18,7 +20,8 @@
     "db:local": "node scripts/local-db.mjs",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed:demo": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/demo.ts"
   },
   "dependencies": {
     "@fontsource-variable/golos-text": "^5.3.0",

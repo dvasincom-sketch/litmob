@@ -1,15 +1,26 @@
-import { LandingPage, landingMetadata } from '@/lib/landing'
+import { notFound } from 'next/navigation'
+import { hasLanding, LandingPage, landingMetadata } from '@/lib/landing'
+import { joinPath } from '@/lib/paths'
 
 type Props = { params: Promise<{ slug: string[] }> }
 
-export const dynamic = 'force-dynamic'
+/** Раздел 18+: сюжеты (омегаверс) и подборки (/18/podborki/…). */
+async function kindOf(slug: string[]) {
+  const path = joinPath('/18', ...slug)
+  if (await hasLanding('tropes', path)) return 'tropes' as const
+  if (await hasLanding('collections', path)) return 'collections' as const
+  return null
+}
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  return landingMetadata('tropes', slug, '/18')
+  const kind = await kindOf(slug)
+  return kind ? landingMetadata(kind, slug, '/18') : {}
 }
 
 export default async function Page({ params }: Props) {
   const { slug } = await params
-  return <LandingPage kind="tropes" segments={slug} prefix="/18" />
+  const kind = await kindOf(slug)
+  if (!kind) notFound()
+  return <LandingPage kind={kind} segments={slug} prefix="/18" />
 }

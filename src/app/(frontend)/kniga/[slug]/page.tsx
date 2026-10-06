@@ -3,132 +3,230 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Audio, Author, Book, Narrator, Series, Trope } from '@/payload-types'
-import { BookGrid } from '@/components/BookCard'
+import { BookTile } from '@/components/BookCard'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { Cover } from '@/components/Cover'
+import { BookmarkIcon, PlayIcon } from '@/components/Icons'
 import { JsonLd } from '@/components/JsonLd'
-import { getBookBySlug, getBooksFor, getChaptersOf } from '@/lib/data'
+import { Wrap } from '@/components/Wrap'
+import { getBookBySlug, getBooksFor, getBooksWhere, getChaptersOf } from '@/lib/data'
+import { plural } from '@/lib/home'
 import { SITE_URL } from '@/lib/payload'
 import { buildMetadata } from '@/lib/seo'
 
 type Props = { params: Promise<{ slug: string }> }
-export const dynamic = 'force-dynamic'
-
 const objs = <T,>(v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === 'object') : []) as T[]
 
 function titleFor(b: Book) {
   const authors = objs<Author>(b.authors).map((a) => a.name).join(', ')
   const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
-  const verb = b.hasAudio ? 'слушать аудиокнигу' : 'читать'
   const tr = b.isTranslation && b.originalTitle ? ` (${b.originalTitle} на русском)` : ''
-  return `${b.title}${tr} — ${verb}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''} | Литмоб`
+  return `${b.title}${tr} — ${b.hasAudio ? 'слушать аудиокнигу' : 'читать'}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''} | Литмоб`
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params
-  const book = await getBookBySlug(slug)
+  const book = await getBookBySlug((await params).slug)
   if (!book) return {}
   return buildMetadata({ ...book, lead: book.hook }, { fallbackTitle: titleFor(book) })
 }
 
 const HEAT: Record<string, string> = { none: 'Без откровенных сцен', moderate: 'Умеренно откровенно', explicit: '18+' }
 const STATUS: Record<string, string> = { ongoing: 'Пишется', completed: 'Завершена', frozen: 'Заморожена' }
-const HE: Record<string, string> = { yes: 'ХЭ', no: 'Без ХЭ', unknown: '' }
+const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="text-xl lg:text-2xl">{children}</h2>
 
+/** Страница книги — по макету Book.dc (шаги ①–⑨). */
 export default async function BookPage({ params }: Props) {
-  const { slug } = await params
-  const book = await getBookBySlug(slug)
+  const book = await getBookBySlug((await params).slug)
   if (!book) notFound()
   const chapters = await getChaptersOf(book.id)
   const free = book.freeChapters ?? 1
-  const first = chapters.find((c: any) => c.audio && typeof c.audio === 'object')
+  const first = chapters.find((c) => c.audio && typeof c.audio === 'object')
   const firstAudio = first ? (first.audio as Audio) : null
   const tropes = objs<Trope>(book.tropes)
   const authors = objs<Author>(book.authors)
   const narrators = objs<Narrator>(book.narrators)
   const series = book.series?.ref && typeof book.series.ref === 'object' ? (book.series.ref as Series) : null
-  const similar = (await getBooksFor('tropes', tropes.map((t) => t.id), false, 7)).docs.filter((b) => b.id !== book.id).slice(0, 6)
-  const labels = [book.hasAudio ? `Аудио${book.audioHours ? ` · ${book.audioHours} ч` : ''}` : null, HE[book.happyEnding || 'unknown'], HEAT[book.heat || 'none'], STATUS[book.status || 'ongoing']].filter(Boolean)
-  const crumbs = [
-    ...(tropes[0]?.path ? [{ label: tropes[0].title, href: tropes[0].path }] : []),
-    { label: book.title, href: book.path || `/kniga/${book.slug}/` },
-  ]
+  const seriesBooks = series ? await getBooksWhere('series.ref', series.id, 'series.order') : []
+  const similar = (await getBooksFor('tropes', tropes.map((t) => t.id), false, 9)).docs.filter((b) => b.id !== book.id).slice(0, 8)
+  const ext = book.externalLinks?.[0]
+  const labels = [book.happyEnding === 'yes' ? 'ХЭ' : null, HEAT[book.heat || 'none'], STATUS[book.status || 'ongoing']].filter(Boolean) as string[]
+  const crumbs = [...(tropes[0]?.path ? [{ label: tropes[0].title, href: tropes[0].path }] : []), { label: book.title, href: book.path || `/kniga/${book.slug}/` }]
+  const shown = chapters.slice(0, 3)
+  const rest = chapters.slice(3)
+  const chapterState = (i: number, c: (typeof chapters)[number]) => (c.isFree || i < free ? { t: 'Бесплатно', cls: 'text-free' } : { t: 'По подписке', cls: 'text-muted' })
 
   return (
-    <article className="pt-4">
-      <Breadcrumbs items={crumbs} />
-      <header className="mt-3 flex flex-col gap-2">
-        <h1 className="text-3xl">{book.title}</h1>
-        {book.isTranslation && book.originalTitle && <p className="text-sm text-muted">{book.originalTitle} — официальный перевод{book.translator ? `, перевод: ${book.translator}` : ''}</p>}
-        <p className="text-muted">
-          {authors.map((a, i) => (
-            <span key={a.id}>{i > 0 && ', '}<Link href={a.path || '#'}>{a.name}</Link></span>
-          ))}
-          {narrators.length > 0 && ' · читает '}
-          {narrators.map((n, i) => (
-            <span key={n.id}>{i > 0 && ', '}<Link href={n.path || '#'}>{n.name}</Link></span>
-          ))}
-        </p>
-        {series && <p className="text-sm">Серия: <Link href={series.path || '#'}>{series.title}</Link>{book.series?.order ? `, книга ${book.series.order}` : ''}</p>}
-        <div className="flex flex-wrap gap-2 text-xs font-semibold text-rose">{labels.map((l) => <span key={l} className="rounded-full bg-white px-2 py-1">{l}</span>)}</div>
-        {book.hook && <p className="text-lg">{book.hook}</p>}
+    <article className="pb-24 lg:pb-12">
+      <header className="on-dark bg-wine text-white">
+        <Wrap className="flex flex-col gap-4 pb-[22px] pt-3.5 lg:pb-10 lg:pt-6">
+          <Breadcrumbs items={crumbs} light />
+          <div className="flex items-start gap-3.5 lg:gap-8">
+            <div className="lg:hidden"><Cover book={book} w={128} h={192} shadow /></div>
+            <div className="hidden lg:block"><Cover book={book} w={200} h={300} shadow /></div>
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <h1 className="text-2xl lg:text-[40px]">{book.title}</h1>
+              {book.isTranslation && book.originalTitle && <span className="text-[13px] text-blush">{book.originalTitle} — официальный перевод</span>}
+              <span className="font-semibold">
+                {authors.map((a, i) => (
+                  <span key={a.id}>{i > 0 && ', '}<Link href={a.path || '#'}>{a.name}</Link></span>
+                ))}
+              </span>
+              {narrators.length > 0 && (
+                <span className="text-[13px] text-blush">
+                  Читает{' '}
+                  {narrators.map((n, i) => (
+                    <span key={n.id}>{i > 0 && ', '}<Link href={n.path || '#'} className="font-semibold text-pink">{n.name}</Link></span>
+                  ))}
+                </span>
+              )}
+              <span className="text-[13px] text-blush">
+                {[series && book.series?.order ? `Книга ${book.series.order} из ${seriesBooks.length || book.series.order}` : null, book.audioHours ? `${book.audioHours} ч аудио` : null, chapters.length ? `${chapters.length} ${plural(chapters.length, 'глава', 'главы', 'глав')}` : null].filter(Boolean).join(' · ')}
+              </span>
+              <span className="text-[13px] text-pink">{labels.join(' · ')}</span>
+              {book.hook && <span className="mt-1 hidden max-w-xl text-blush lg:block">{book.hook}</span>}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {tropes.map((t) => (
+              <Link key={t.id} href={t.path || '#'} className="rounded-full bg-wine-2 px-[11px] py-1.5 text-[13px] text-white">{t.title}</Link>
+            ))}
+          </div>
+        </Wrap>
       </header>
 
-      {firstAudio?.url ? (
-        <section className="mt-5 rounded-2xl bg-wine p-4 text-white">
-          <h2 className="mb-2 text-xl">Первая глава бесплатно</h2>
-          <audio controls preload="none" src={firstAudio.url} className="w-full" />
-        </section>
-      ) : null}
-
-      <div className="mt-5 flex flex-wrap gap-3">
-        <Link href={`/vhod/?next=${encodeURIComponent(book.path || '/')}&follow=book:${book.id}`} className="rounded-xl bg-rose px-4 py-2 font-semibold text-white no-underline">
-          Сообщить о проде
-        </Link>
-        {(book.externalLinks || []).map((l) => (
-          <a key={l.id || l.url} href={l.url} rel="nofollow noopener" target="_blank" className="rounded-xl border border-petal bg-white px-4 py-2 no-underline">
-            Читать у автора: {l.label}
-          </a>
-        ))}
-      </div>
-
-      {book.warnings?.length ? (
-        <p className="mt-4 text-sm text-muted">Предупреждения: {book.warnings.map((w) => w.text).join(' · ')}</p>
-      ) : null}
-
-      {book.about && (
-        <section className="prose-lm mt-8">
-          <h2 className="text-2xl">О чём книга</h2>
-          <RichText data={book.about} />
-          {tropes.length > 0 && (
-            <p className="text-sm">Подойдёт, если нравятся: {tropes.map((t, i) => <span key={t.id}>{i > 0 && ', '}<Link href={t.path || '#'}>{t.title.toLowerCase()}</Link></span>)}</p>
+      <Wrap className="flex flex-col gap-6 lg:max-w-[880px]">
+        <section className="-mt-2 flex flex-col gap-3 rounded-2xl bg-white p-3.5 shadow-[var(--shadow-card)] lg:mt-6">
+          <span className="font-semibold">Глава 1 · бесплатно</span>
+          {firstAudio?.url ? (
+            <audio controls preload="none" src={firstAudio.url} className="w-full" />
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-rose/50"><PlayIcon size={20} color="#FFFFFF" /></span>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <div className="h-1 rounded bg-track" />
+                <span className="text-xs text-muted">{book.hasAudio ? 'Аудио появится после загрузки файла' : 'Озвучка скоро — подпишитесь, сообщим'}</span>
+              </div>
+            </div>
+          )}
+          {ext && (
+            <a href={ext.url} target="_blank" rel="nofollow noopener" className="text-sm font-semibold text-rose">
+              Читать текст у автора на {ext.label} ↗
+            </a>
           )}
         </section>
-      )}
 
-      {chapters.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-2 text-2xl">Главы</h2>
-          <ol className="flex flex-col divide-y divide-line rounded-2xl border border-line bg-white">
-            {chapters.map((c: any, i: number) => (
-              <li key={c.id} className="flex justify-between px-4 py-2 text-sm">
-                <span>{c.order}. {c.title}</span>
-                <span className="text-muted">{c.isFree || i < free ? 'бесплатно' : 'по подписке'}</span>
-              </li>
+        {chapters.length > 0 && (
+          <section className="flex flex-col gap-2.5">
+            <H2>Главы</H2>
+            <div className="flex flex-col rounded-[14px] border border-line bg-white">
+              {shown.map((c, i) => {
+                const s = chapterState(i, c)
+                return (
+                  <div key={c.id} className="flex items-center gap-3 border-b border-line-2 px-3.5 py-3 last:border-0">
+                    <span className="flex-1 text-sm">{c.title}</span>
+                    <span className={`text-xs font-semibold ${s.cls}`}>{s.t}</span>
+                  </div>
+                )
+              })}
+              {rest.length > 0 && (
+                <details>
+                  <summary className="cursor-pointer list-none px-3.5 py-3 text-sm font-semibold text-rose">Ещё {rest.length} {plural(rest.length, 'глава', 'главы', 'глав')} · Показать</summary>
+                  {rest.map((c, k) => {
+                    const s = chapterState(k + 3, c)
+                    return (
+                      <div key={c.id} className="flex items-center gap-3 border-t border-line-2 px-3.5 py-3">
+                        <span className="flex-1 text-sm">{c.title}</span>
+                        <span className={`text-xs font-semibold ${s.cls}`}>{s.t}</span>
+                      </div>
+                    )
+                  })}
+                </details>
+              )}
+            </div>
+          </section>
+        )}
+
+        <section className="on-dark flex flex-col gap-2.5 rounded-2xl bg-wine p-4 text-white">
+          <span className="font-display text-xl">Слушайте всю книгу</span>
+          <span className="text-sm text-blush">Подписка открывает все главы этой книги и каталог аудиоверсий. Часть денег получают автор и чтец.</span>
+          <Link href="/podpiska/" className="rounded-xl bg-white px-4 py-[13px] text-center font-semibold text-wine">Оформить подписку</Link>
+        </section>
+
+        <section className="flex flex-col gap-2.5">
+          <H2>О чём книга</H2>
+          {book.about ? <div className="prose-lm"><RichText data={book.about} /></div> : book.hook ? <p className="text-ink-2">{book.hook}</p> : null}
+          {tropes.length > 0 && (
+            <p className="text-[13px] text-muted">
+              Подойдёт, если нравятся:{' '}
+              {tropes.map((t, i) => (
+                <span key={t.id}>{i > 0 && ', '}<Link href={t.path || '#'} className="underline decoration-petal underline-offset-2">{t.title.toLowerCase()}</Link></span>
+              ))}
+            </p>
+          )}
+          {book.warnings?.length ? <p className="text-[13px] text-muted">Предупреждения: {book.warnings.map((w) => w.text).join(' · ')}</p> : null}
+        </section>
+
+        {narrators.length > 0 && (
+          <section className="flex flex-col gap-2.5">
+            <H2>Озвучка</H2>
+            {narrators.map((n) => (
+              <div key={n.id} className="flex items-center gap-3 rounded-[14px] border border-line bg-white p-3">
+                <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-petal font-display text-lg text-cover-ink">{n.name.slice(0, 1)}</span>
+                <Link href={n.path || '#'} className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="font-semibold">{n.name}</span>
+                  {n.voice && <span className="text-xs text-muted">{n.voice}</span>}
+                </Link>
+                <Link href={`/vhod/?follow=narrator:${n.id}`} className="flex h-11 items-center rounded-full border border-rose px-3.5 text-[13px] font-semibold text-rose">Подписаться</Link>
+              </div>
             ))}
-          </ol>
+          </section>
+        )}
+
+        {series && seriesBooks.length > 1 && (
+          <section className="flex flex-col gap-2.5">
+            <H2>Серия по порядку</H2>
+            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+              {seriesBooks.map((s) =>
+                s.id === book.id ? (
+                  <div key={s.id} className="flex flex-col gap-0.5 rounded-xl border-2 border-rose bg-white p-2.5">
+                    <span className="text-xs font-semibold text-rose">Книга {s.series?.order} · вы здесь</span>
+                    <span className="text-sm font-semibold">{s.title}</span>
+                  </div>
+                ) : (
+                  <Link key={s.id} href={s.path || '#'} className="flex flex-col gap-0.5 rounded-xl border border-line bg-white p-2.5">
+                    <span className="text-xs text-muted">Книга {s.series?.order}{s.hasAudio ? '' : ' · аудио скоро'}</span>
+                    <span className="text-sm font-semibold">{s.title}</span>
+                  </Link>
+                ),
+              )}
+            </div>
+          </section>
+        )}
+
+        {book.mode === 'reference' && !book.claimed && (
+          <p className="text-[13px] text-muted">
+            Это справочная страница. Вы автор? <Link href={`/pravoobladatelyam/?book=${book.id}`} className="font-semibold text-rose">Подтвердите страницу</Link> — добавим обложку, главы и озвучку.
+          </p>
+        )}
+      </Wrap>
+
+      {similar.length > 0 && (
+        <section className="mt-6 flex flex-col gap-3">
+          <Wrap className="lg:max-w-[880px]"><H2>Если понравилось</H2></Wrap>
+          <div className="scroll-row px-4 pb-1 lg:mx-auto lg:max-w-[880px] lg:px-6">
+            {similar.map((b) => <BookTile key={b.id} book={b} width={120} />)}
+          </div>
         </section>
       )}
 
-      <section className="mt-10">
-        <h2 className="mb-3 text-2xl">Похожие книги</h2>
-        <BookGrid books={similar} empty="Подбираем похожие книги." />
-      </section>
-
-      {book.mode === 'reference' && !book.claimed && (
-        <p className="mt-8 text-sm text-muted">
-          Это справочная страница. Вы автор? <Link href={`/pravoobladatelyam/?book=${book.id}`}>Подтвердите страницу</Link> — добавим обложку, главы и озвучку.
-        </p>
-      )}
+      <div className="fixed inset-x-0 bottom-[54px] z-20 flex gap-2.5 border-t border-line bg-white px-4 pb-3.5 pt-2.5 lg:hidden">
+        <Link href={firstAudio?.url ? '#' : `/vhod/?follow=book:${book.id}`} className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white">
+          {firstAudio?.url ? 'Слушать бесплатно' : 'Сообщить о проде'}
+        </Link>
+        <Link href={`/vhod/?shelf=${book.id}`} aria-label="Добавить на полку" className="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-petal bg-white">
+          <BookmarkIcon color="#9C2B4E" />
+        </Link>
+      </div>
 
       <JsonLd
         data={{

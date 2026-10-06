@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 
@@ -17,7 +18,7 @@ const STEPS = [
 
 export default function CreateLitmob() {
   return (
-    <div className="flex flex-col gap-6 pt-4">
+    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }, { label: 'Создать', href: '/litmoby/sozdat/' }]} />
       <h1 className="text-3xl">Создать свой литмоб</h1>
       <p className="max-w-2xl text-muted">Вы задаёте границы — мы помогаем собрать авторов и читателей. Перед публикацией литмоб проходит модерацию.</p>
@@ -30,6 +31,6 @@ export default function CreateLitmob() {
         ))}
       </ol>
       <Link href="/vhod/?next=/litmoby/sozdat/&role=author" className="self-start rounded-xl bg-rose px-4 py-3 font-semibold text-white no-underline">Войти как автор и начать</Link>
-    </div>
+    </Wrap>
   )
 }

@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     tropes: Trope;
     genres: Genre;
+    collections: Collection;
     books: Book;
     chapters: Chapter;
     series: Series;
@@ -78,6 +79,7 @@ export interface Config {
     'litmob-entries': LitmobEntry;
     follows: Follow;
     users: User;
+    pages: Page;
     media: Media;
     audio: Audio;
     'payload-kv': PayloadKv;
@@ -108,6 +110,7 @@ export interface Config {
   collectionsSelect: {
     tropes: TropesSelect<false> | TropesSelect<true>;
     genres: GenresSelect<false> | GenresSelect<true>;
+    collections: CollectionsSelect<false> | CollectionsSelect<true>;
     books: BooksSelect<false> | BooksSelect<true>;
     chapters: ChaptersSelect<false> | ChaptersSelect<true>;
     series: SeriesSelect<false> | SeriesSelect<true>;
@@ -117,6 +120,7 @@ export interface Config {
     'litmob-entries': LitmobEntriesSelect<false> | LitmobEntriesSelect<true>;
     follows: FollowsSelect<false> | FollowsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     audio: AudioSelect<false> | AudioSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -182,6 +186,10 @@ export interface Trope {
   adult?: boolean | null;
   related?: (number | Trope)[] | null;
   /**
+   * Под названием в каталоге: «После развода, с генералом, попаданка».
+   */
+  subtitle?: string | null;
+  /**
    * Пусто — берётся название.
    */
   h1?: string | null;
@@ -227,6 +235,10 @@ export interface Trope {
    */
   slug?: string | null;
   /**
+   * Если адрес вне своего раздела: /18/omegavers/, /audio/rasskazy/.
+   */
+  customPath?: string | null;
+  /**
    * Вычисляется автоматически.
    */
   path?: string | null;
@@ -260,6 +272,10 @@ export interface Book {
    * Только с разрешения правообладателя.
    */
   cover?: (number | null) | Media;
+  /**
+   * HEX, например #E9C7D2. Пока нет обложки — цветная плашка с сюжетом.
+   */
+  coverTint?: string | null;
   /**
    * Не копия аннотации — свой текст без спойлеров.
    */
@@ -326,6 +342,10 @@ export interface Book {
   path?: string | null;
   published?: boolean | null;
   publishedAt?: string | null;
+  /**
+   * Вымышленная книга для проверки дизайна. Удаляется командой seed:demo -- --remove.
+   */
+  isDemo?: boolean | null;
   chapters?: {
     docs?: (number | Chapter)[];
     hasNextPage?: boolean;
@@ -358,6 +378,7 @@ export interface Author {
       }[]
     | null;
   user?: (number | null) | User;
+  isDemo?: boolean | null;
   claimed?: boolean | null;
   /**
    * Латиницей. Пусто — сгенерируется из названия.
@@ -465,6 +486,7 @@ export interface Narrator {
   demo?: (number | null) | Audio;
   genres?: (number | Genre)[] | null;
   user?: (number | null) | User;
+  isDemo?: boolean | null;
   /**
    * Латиницей. Пусто — сгенерируется из названия.
    */
@@ -522,6 +544,10 @@ export interface Genre {
   adult?: boolean | null;
   tropes?: (number | Trope)[] | null;
   /**
+   * Под названием в каталоге: «После развода, с генералом, попаданка».
+   */
+  subtitle?: string | null;
+  /**
    * Пусто — берётся название.
    */
   h1?: string | null;
@@ -566,6 +592,10 @@ export interface Genre {
    * Латиницей. Пусто — сгенерируется из названия.
    */
   slug?: string | null;
+  /**
+   * Если адрес вне своего раздела: /18/omegavers/, /audio/rasskazy/.
+   */
+  customPath?: string | null;
   /**
    * Вычисляется автоматически.
    */
@@ -739,6 +769,87 @@ export interface Chapter {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections".
+ */
+export interface Collection {
+  id: number;
+  title: string;
+  /**
+   * Под названием в каталоге: «После развода, с генералом, попаданка».
+   */
+  subtitle?: string | null;
+  adult?: boolean | null;
+  tropes?: (number | Trope)[] | null;
+  genres?: (number | Genre)[] | null;
+  audioOnly?: boolean | null;
+  books?: (number | Book)[] | null;
+  /**
+   * Пусто — берётся название.
+   */
+  h1?: string | null;
+  /**
+   * 2–3 предложения под главный запрос.
+   */
+  lead?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  faq?:
+    | {
+        q: string;
+        a: string;
+        id?: string | null;
+      }[]
+    | null;
+  mainQuery?: string | null;
+  monthlyVolume?: number | null;
+  /**
+   * Например ×2,4 или «новый».
+   */
+  growth?: string | null;
+  wave?: ('1' | '2' | '3' | '4') | null;
+  /**
+   * Через запятую.
+   */
+  phrases?: string | null;
+  /**
+   * Латиницей. Пусто — сгенерируется из названия.
+   */
+  slug?: string | null;
+  /**
+   * Если адрес вне своего раздела: /18/omegavers/, /audio/rasskazy/.
+   */
+  customPath?: string | null;
+  /**
+   * Вычисляется автоматически.
+   */
+  path?: string | null;
+  published?: boolean | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "follows".
  */
 export interface Follow {
@@ -747,6 +858,75 @@ export interface Follow {
   book?: (number | null) | Book;
   litmob?: (number | null) | Litmob;
   channel?: ('email' | 'push') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  section?: ('narrators' | 'authors' | 'article' | 'service') | null;
+  cta?: {
+    label?: string | null;
+    href?: string | null;
+  };
+  /**
+   * Пусто — берётся название.
+   */
+  h1?: string | null;
+  /**
+   * 2–3 предложения под главный запрос.
+   */
+  lead?: string | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  faq?:
+    | {
+        q: string;
+        a: string;
+        id?: string | null;
+      }[]
+    | null;
+  mainQuery?: string | null;
+  monthlyVolume?: number | null;
+  /**
+   * Например ×2,4 или «новый».
+   */
+  growth?: string | null;
+  wave?: ('1' | '2' | '3' | '4') | null;
+  /**
+   * Через запятую.
+   */
+  phrases?: string | null;
+  /**
+   * Полный адрес, например /avtoram/kak-napisat-knigu/
+   */
+  path?: string | null;
+  published?: boolean | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -783,6 +963,10 @@ export interface PayloadLockedDocument {
         value: number | Genre;
       } | null)
     | ({
+        relationTo: 'collections';
+        value: number | Collection;
+      } | null)
+    | ({
         relationTo: 'books';
         value: number | Book;
       } | null)
@@ -817,6 +1001,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
       } | null)
     | ({
         relationTo: 'media';
@@ -880,6 +1068,7 @@ export interface TropesSelect<T extends boolean = true> {
   audioOnly?: T;
   adult?: T;
   related?: T;
+  subtitle?: T;
   h1?: T;
   lead?: T;
   body?: T;
@@ -896,6 +1085,7 @@ export interface TropesSelect<T extends boolean = true> {
   wave?: T;
   phrases?: T;
   slug?: T;
+  customPath?: T;
   path?: T;
   published?: T;
   books?: T;
@@ -919,6 +1109,7 @@ export interface GenresSelect<T extends boolean = true> {
   audioOnly?: T;
   adult?: T;
   tropes?: T;
+  subtitle?: T;
   h1?: T;
   lead?: T;
   body?: T;
@@ -935,6 +1126,48 @@ export interface GenresSelect<T extends boolean = true> {
   wave?: T;
   phrases?: T;
   slug?: T;
+  customPath?: T;
+  path?: T;
+  published?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_select".
+ */
+export interface CollectionsSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  adult?: T;
+  tropes?: T;
+  genres?: T;
+  audioOnly?: T;
+  books?: T;
+  h1?: T;
+  lead?: T;
+  body?: T;
+  faq?:
+    | T
+    | {
+        q?: T;
+        a?: T;
+        id?: T;
+      };
+  mainQuery?: T;
+  monthlyVolume?: T;
+  growth?: T;
+  wave?: T;
+  phrases?: T;
+  slug?: T;
+  customPath?: T;
   path?: T;
   published?: T;
   meta?:
@@ -956,6 +1189,7 @@ export interface BooksSelect<T extends boolean = true> {
   authors?: T;
   narrators?: T;
   cover?: T;
+  coverTint?: T;
   about?: T;
   hook?: T;
   series?:
@@ -995,6 +1229,7 @@ export interface BooksSelect<T extends boolean = true> {
   path?: T;
   published?: T;
   publishedAt?: T;
+  isDemo?: T;
   chapters?: T;
   meta?:
     | T
@@ -1059,6 +1294,7 @@ export interface AuthorsSelect<T extends boolean = true> {
         id?: T;
       };
   user?: T;
+  isDemo?: T;
   claimed?: T;
   slug?: T;
   path?: T;
@@ -1086,6 +1322,7 @@ export interface NarratorsSelect<T extends boolean = true> {
   demo?: T;
   genres?: T;
   user?: T;
+  isDemo?: T;
   slug?: T;
   path?: T;
   published?: T;
@@ -1204,6 +1441,46 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  section?: T;
+  cta?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+      };
+  h1?: T;
+  lead?: T;
+  body?: T;
+  faq?:
+    | T
+    | {
+        q?: T;
+        a?: T;
+        id?: T;
+      };
+  mainQuery?: T;
+  monthlyVolume?: T;
+  growth?: T;
+  wave?: T;
+  phrases?: T;
+  path?: T;
+  published?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

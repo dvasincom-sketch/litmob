@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Wrap } from './Wrap'
 import type { Metadata } from 'next'
 import { BookGrid } from './BookCard'
 import { Breadcrumbs } from './Breadcrumbs'
@@ -26,7 +27,7 @@ export async function PersonPage({ kind, slug }: { kind: Kind; slug: string }) {
   const books = await getBooksWhere(CFG[kind].key, doc.id, CFG[kind].sort)
   const crumbs = [...(CFG[kind].crumb ? [CFG[kind].crumb!] : []), { label: name, href: doc.path }]
   return (
-    <article className="flex flex-col gap-4 pt-4">
+    <Wrap className="flex flex-col gap-4  py-6 lg:py-10">
       <Breadcrumbs items={crumbs} />
       <h1 className="text-3xl">{CFG[kind].h1(name)}</h1>
       {(doc.lead || doc.about) && <p className="max-w-2xl text-muted">{doc.lead || doc.about}</p>}
@@ -35,6 +36,6 @@ export async function PersonPage({ kind, slug }: { kind: Kind; slug: string }) {
         <p className="text-sm">Страницы автора: {doc.links.map((l: any, i: number) => <span key={l.url}>{i > 0 && ', '}<a href={l.url} rel="nofollow noopener" target="_blank">{l.label}</a></span>)}</p>
       )}
       <BookGrid books={books} ranked={kind !== 'narrators'} />
-    </article>
+    </Wrap>
   )
 }

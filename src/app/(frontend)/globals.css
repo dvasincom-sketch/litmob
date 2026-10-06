@@ -2,27 +2,37 @@
 @import '@fontsource-variable/golos-text';
 @import '@fontsource/prata';
 
-/* Вариант А «тёплый ромфант»: винный + розовый, Prata в заголовках, Golos Text в тексте. */
+/* Вариант А «тёплый ромфант» — цвета и шрифты из макета MobileWarm/Trope/Book. */
 @theme {
   --color-wine: #3a1424;
+  --color-wine-2: #57223a;
   --color-rose: #9c2b4e;
+  --color-pink: #f2a7c3;
   --color-blush: #f0d6de;
   --color-petal: #e9c7d2;
+  --color-track: #f2dde4;
   --color-cream: #fbf4f1;
   --color-ink: #2a1219;
+  --color-ink-2: #4a2a35;
   --color-muted: #8a5a6a;
+  --color-cover-ink: #6b3348;
   --color-line: #f0dde3;
-  /* Мужские разделы: сдержанная сине-серая гамма. */
-  --color-steel: #1c2a3a;
-  --color-steel-soft: #e3eaf3;
+  --color-line-2: #f6e7ec;
+  --color-free: #2f7d4f;
   --font-display: 'Prata', Georgia, serif;
   --font-sans: 'Golos Text Variable', system-ui, sans-serif;
+  --shadow-card: 0 6px 20px rgba(58, 20, 36, 0.1);
+  --shadow-cover: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-html { background: var(--color-cream); color: var(--color-ink); }
-body { font-family: var(--font-sans); line-height: 1.5; }
-h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.15; }
-a { color: inherit; }
-.prose-lm p { margin: 0 0 0.75rem; max-width: 68ch; }
-.prose-lm h2 { font-size: 1.4rem; margin: 1.5rem 0 0.5rem; }
+html { background: var(--color-cream); color: var(--color-ink); -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-sans); font-size: 15px; line-height: 1.45; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.15; margin: 0; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--color-rose); }
+.on-dark a:hover { color: var(--color-pink); }
+.scroll-row { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
+.scroll-row::-webkit-scrollbar { display: none; }
+.prose-lm p { margin: 0 0 0.75rem; max-width: 68ch; color: var(--color-ink-2); }
+.prose-lm h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; }
 .prose-lm ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; }

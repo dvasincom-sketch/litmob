@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Wrap } from '@/components/Wrap'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { BookCard } from '@/components/BookCard'
@@ -24,7 +25,7 @@ export default async function LitmobPage({ params }: Props) {
   const books = entries.map((e) => e.book).filter((b) => b && typeof b === 'object')
   const trope = l.trope && typeof l.trope === 'object' ? l.trope : null
   return (
-    <article className="flex flex-col gap-6 pt-4">
+    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }, { label: l.title, href: l.path }]} />
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl">Литмоб «{l.title}»</h1>
@@ -54,6 +55,6 @@ export default async function LitmobPage({ params }: Props) {
         <h2 className="mb-3 text-2xl">Книги литмоба</h2>
         {books.length ? <div className="grid gap-3 sm:grid-cols-2">{books.map((b: any) => <BookCard key={b.id} book={b} />)}</div> : <p className="text-sm text-muted">Книги появятся после старта.</p>}
       </section>
-    </article>
+    </Wrap>
   )
 }
