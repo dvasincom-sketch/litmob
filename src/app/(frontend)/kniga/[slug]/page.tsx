@@ -139,7 +139,7 @@ export default async function BookPage({ params }: Props) {
         </Wrap>
       </header>
 
-      <Wrap className="flex flex-col gap-6 md:max-w-[880px] md:pt-10">
+      <Wrap className="flex flex-col gap-6 md:pt-10 *:max-w-[820px]">
         <div className="-mt-2 lg:hidden">{listenCard(false)}</div>
 
         {chapters.length > 0 && (
@@ -239,8 +239,8 @@ export default async function BookPage({ params }: Props) {
 
       {similar.length > 0 && (
         <section className="mt-6 flex flex-col gap-3">
-          <Wrap className="md:max-w-[880px]"><H2>Если понравилось</H2></Wrap>
-          <div className="scroll-row px-4 pb-1 md:mx-auto md:max-w-[880px] md:px-6">
+          <Wrap><H2>Если понравилось</H2></Wrap>
+          <div className="scroll-row px-4 pb-1 md:mx-auto md:max-w-[1240px] md:px-6">
             {similar.map((b) => <BookTile key={b.id} book={b} width={120} />)}
           </div>
         </section>
