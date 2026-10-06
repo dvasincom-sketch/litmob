@@ -37,7 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const q = r.page.mainQuery || ''
     // Главный запрос — в начало title, если его нет в H1.
     let title = q && !h1.toLowerCase().includes(q.toLowerCase()) ? `${cap(q)} — ${low(h1)}` : h1
-    if (title.length < 30) title = `${title} — Литмоб, книги и аудиокниги любовного фэнтези`
+    if (title.length > 70) title = h1
+    if (title.length < 30) title = title.includes('Литмоб') ? `${title}: книги и аудиокниги любовного фэнтези` : `${title} — Литмоб, книги и аудиокниги любовного фэнтези`
     const tail: Record<string, string> = {
       authors: 'Гид Литмоба для авторов: публикация, литмобы, озвучка книг',
       narrators: 'Гид Литмоба для чтецов: как начать озвучивать книги и зарабатывать',
