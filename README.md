@@ -56,5 +56,5 @@ npm run generate:types
 
 ## Деплой
 
-`Dockerfile` собирает образ без доступа к БД; при старте контейнера выполняются
-`npm run migrate && npm run start`. Health-check — `/api/health`.
+Timeweb Cloud Apps из `Dockerfile` + управляемый PostgreSQL + S3. Пошагово, с
+переменными окружения и настройкой домена — в [docs/DEPLOY.md](docs/DEPLOY.md).
