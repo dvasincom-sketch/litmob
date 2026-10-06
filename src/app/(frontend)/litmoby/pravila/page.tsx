@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function Rules() {
   return (
-    <Wrap className="prose-lm flex flex-col gap-2  py-6 lg:py-10">
+    <Wrap className="prose-lm flex flex-col gap-2  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }, { label: 'Правила', href: '/litmoby/pravila/' }]} />
       <h1 className="text-3xl">Что такое литмоб и как участвовать</h1>
       <p>Литмоб — литературный флешмоб: несколько авторов пишут книги на один сюжет по общим правилам и в общие сроки.</p>

@@ -19,7 +19,7 @@ export const viewport: Viewport = { themeColor: '#3A1424', width: 'device-width'
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body className="min-h-screen bg-cream pb-16 lg:pb-0">
+      <body className="min-h-screen bg-cream pb-16 md:pb-0">
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />

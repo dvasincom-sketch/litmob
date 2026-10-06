@@ -24,7 +24,7 @@ const FAQ = [
 export default async function Litmobs() {
   const list: any[] = await getLitmobs()
   return (
-    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
+    <Wrap className="flex flex-col gap-6  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }]} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-3xl">Литмобы</h1>

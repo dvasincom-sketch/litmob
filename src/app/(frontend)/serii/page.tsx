@@ -15,7 +15,7 @@ export default async function SeriesHub() {
     <>
       <LandingPage kind="collections" segments={[]} prefix="/serii" />
       {res.docs.length > 0 && (
-        <Wrap className="-mt-6 grid gap-2.5 pb-12 lg:grid-cols-3">
+        <Wrap className="-mt-6 grid gap-2.5 pb-12 md:grid-cols-3">
           {res.docs.map((s) => (
             <Link key={s.id} href={s.path || '#'} className="rounded-[14px] border border-line bg-white p-4 font-semibold">
               {s.title}

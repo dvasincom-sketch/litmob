@@ -16,12 +16,12 @@ export default async function Collections() {
   return (
     <>
       <header className="on-dark bg-wine text-white">
-        <Wrap className="flex flex-col gap-3.5 pb-6 pt-3.5 lg:pb-10 lg:pt-6">
+        <Wrap className="flex flex-col gap-3.5 pb-6 pt-3.5 md:pb-10 md:pt-6">
           <Breadcrumbs items={[{ label: 'Подборки', href: '/podborki/' }]} light />
-          <h1 className="text-[28px] lg:text-[44px]">Подборки, которые ищут</h1>
+          <h1 className="text-[28px] md:text-[44px]">Подборки, которые ищут</h1>
         </Wrap>
       </header>
-      <Wrap className="grid gap-2.5 py-6 lg:grid-cols-3 lg:gap-3.5">
+      <Wrap className="grid gap-2.5 py-6 md:grid-cols-3 md:gap-3.5">
         {res.docs.map((c) => (
           <Link key={c.id} href={c.path || '#'} className="flex flex-col gap-1 rounded-[14px] border border-line bg-white p-4">
             <span className="font-semibold">{c.title}</span>

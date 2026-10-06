@@ -18,7 +18,7 @@ const STEPS = [
 
 export default function CreateLitmob() {
   return (
-    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
+    <Wrap className="flex flex-col gap-6  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }, { label: 'Создать', href: '/litmoby/sozdat/' }]} />
       <h1 className="text-3xl">Создать свой литмоб</h1>
       <p className="max-w-2xl text-muted">Вы задаёте границы — мы помогаем собрать авторов и читателей. Перед публикацией литмоб проходит модерацию.</p>

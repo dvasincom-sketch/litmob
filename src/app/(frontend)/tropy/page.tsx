@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { trendLabel } from '@/lib/trend'
 import type { Metadata } from 'next'
 import { PageHero } from '@/components/PageHero'
 import { Wrap } from '@/components/Wrap'
@@ -17,19 +18,19 @@ export default async function TropesCatalog() {
   return (
     <>
       <PageHero crumbs={[{ label: 'Сюжеты', href: '/tropy/' }]} title="Тропы в книгах: каталог сюжетов" lead="Вы знаете, какую историю хотите, даже если не знаете названия. Выберите сюжет — покажем книги, аудио и серии по порядку." />
-      <Wrap className="flex flex-col gap-8 py-6 lg:py-10">
+      <Wrap className="flex flex-col gap-8 py-6 md:py-10">
         {groups.map(({ f, tropes }) => (
           <section key={f.id}>
             <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h2 className="text-[22px] lg:text-[28px]"><Link href={f.path || '#'}>{f.title}</Link></h2>
+              <h2 className="text-[22px] md:text-[28px]"><Link href={f.path || '#'}>{f.title}</Link></h2>
               <Link href={f.path || '#'} className="text-sm font-semibold text-rose">Все</Link>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3 lg:gap-3.5">
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3.5">
               {tropes.map((t) => (
-                <Link key={t.id} href={t.path || '#'} className="flex flex-col gap-1.5 rounded-[14px] border border-line bg-white p-3.5 lg:p-[18px]">
-                  <span className="font-semibold leading-tight lg:text-lg">{t.title}{t.adult ? ' · 18+' : ''}</span>
-                  {t.subtitle && <span className="text-xs text-muted lg:text-sm">{t.subtitle}</span>}
-                  {t.growth && <span className="text-xs font-semibold text-rose">{t.growth === 'новый' ? 'Новый сюжет 2025–2026' : `Интерес ${t.growth} за год`}</span>}
+                <Link key={t.id} href={t.path || '#'} className="flex flex-col gap-1.5 rounded-[14px] border border-line bg-white p-3.5 md:p-[18px]">
+                  <span className="font-semibold leading-tight md:text-lg">{t.title}{t.adult ? ' · 18+' : ''}</span>
+                  {t.subtitle && <span className="text-xs text-muted md:text-sm">{t.subtitle}</span>}
+                  {trendLabel(t.growth) && <span className="self-start rounded-full bg-blush px-2 py-0.5 text-xs font-semibold text-rose">{trendLabel(t.growth)}</span>}
                 </Link>
               ))}
             </div>

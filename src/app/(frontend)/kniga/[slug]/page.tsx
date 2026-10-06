@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const HEAT: Record<string, string> = { none: 'Без откровенных сцен', moderate: 'Умеренно откровенно', explicit: '18+' }
 const STATUS: Record<string, string> = { ongoing: 'Пишется', completed: 'Завершена', frozen: 'Заморожена' }
-const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="text-xl lg:text-2xl">{children}</h2>
+const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="text-xl md:text-2xl">{children}</h2>
 
 /** Страница книги — по макету Book.dc (шаги ①–⑨). */
 export default async function BookPage({ params }: Props) {
@@ -56,15 +56,15 @@ export default async function BookPage({ params }: Props) {
   const chapterState = (i: number, c: (typeof chapters)[number]) => (c.isFree || i < free ? { t: 'Бесплатно', cls: 'text-free' } : { t: 'По подписке', cls: 'text-muted' })
 
   return (
-    <article className="pb-24 lg:pb-12">
+    <article className="pb-10 md:pb-12">
       <header className="on-dark bg-wine text-white">
-        <Wrap className="flex flex-col gap-4 pb-[22px] pt-3.5 lg:pb-10 lg:pt-6">
+        <Wrap className="flex flex-col gap-4 pb-[22px] pt-3.5 md:pb-10 md:pt-6">
           <Breadcrumbs items={crumbs} light />
-          <div className="flex items-start gap-3.5 lg:gap-8">
-            <div className="lg:hidden"><Cover book={book} w={128} h={192} shadow /></div>
-            <div className="hidden lg:block"><Cover book={book} w={200} h={300} shadow /></div>
+          <div className="flex items-start gap-3.5 md:gap-8">
+            <div className="md:hidden"><Cover book={book} w={128} h={192} shadow /></div>
+            <div className="hidden md:block"><Cover book={book} w={200} h={300} shadow /></div>
             <div className="flex min-w-0 flex-col gap-1.5">
-              <h1 className="text-2xl lg:text-[40px]">{book.title}</h1>
+              <h1 className="text-2xl md:text-[40px]">{book.title}</h1>
               {book.isTranslation && book.originalTitle && <span className="text-[13px] text-blush">{book.originalTitle} — официальный перевод</span>}
               <span className="font-semibold">
                 {authors.map((a, i) => (
@@ -83,7 +83,7 @@ export default async function BookPage({ params }: Props) {
                 {[series && book.series?.order ? `Книга ${book.series.order} из ${seriesBooks.length || book.series.order}` : null, book.audioHours ? `${book.audioHours} ч аудио` : null, chapters.length ? `${chapters.length} ${plural(chapters.length, 'глава', 'главы', 'глав')}` : null].filter(Boolean).join(' · ')}
               </span>
               <span className="text-[13px] text-pink">{labels.join(' · ')}</span>
-              {book.hook && <span className="mt-1 hidden max-w-xl text-blush lg:block">{book.hook}</span>}
+              {book.hook && <span className="mt-1 hidden max-w-xl text-blush md:block">{book.hook}</span>}
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -94,8 +94,8 @@ export default async function BookPage({ params }: Props) {
         </Wrap>
       </header>
 
-      <Wrap className="flex flex-col gap-6 lg:max-w-[880px]">
-        <section className="-mt-2 flex flex-col gap-3 rounded-2xl bg-white p-3.5 shadow-[var(--shadow-card)] lg:mt-6">
+      <Wrap className="flex flex-col gap-6 md:max-w-[880px]">
+        <section id="listen" className="-mt-2 flex scroll-mt-20 flex-col gap-3 rounded-2xl bg-white p-3.5 shadow-[var(--shadow-card)] md:mt-6">
           <span className="font-semibold">Глава 1 · бесплатно</span>
           {firstAudio?.url ? (
             <audio controls preload="none" src={firstAudio.url} className="w-full" />
@@ -104,7 +104,7 @@ export default async function BookPage({ params }: Props) {
               <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-rose/50"><PlayIcon size={20} color="#FFFFFF" /></span>
               <div className="flex flex-1 flex-col gap-1.5">
                 <div className="h-1 rounded bg-track" />
-                <span className="text-xs text-muted">{book.hasAudio ? 'Аудио появится после загрузки файла' : 'Озвучка скоро — подпишитесь, сообщим'}</span>
+                <span className="text-xs text-muted">{book.hasAudio ? 'Скоро здесь появится плеер с первой главой' : 'Озвучки пока нет — добавьте книгу на полку, сообщим, когда появится'}</span>
               </div>
             </div>
           )}
@@ -185,7 +185,7 @@ export default async function BookPage({ params }: Props) {
         {series && seriesBooks.length > 1 && (
           <section className="flex flex-col gap-2.5">
             <H2>Серия по порядку</H2>
-            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3">
               {seriesBooks.map((s) =>
                 s.id === book.id ? (
                   <div key={s.id} className="flex flex-col gap-0.5 rounded-xl border-2 border-rose bg-white p-2.5">
@@ -212,16 +212,20 @@ export default async function BookPage({ params }: Props) {
 
       {similar.length > 0 && (
         <section className="mt-6 flex flex-col gap-3">
-          <Wrap className="lg:max-w-[880px]"><H2>Если понравилось</H2></Wrap>
-          <div className="scroll-row px-4 pb-1 lg:mx-auto lg:max-w-[880px] lg:px-6">
+          <Wrap className="md:max-w-[880px]"><H2>Если понравилось</H2></Wrap>
+          <div className="scroll-row px-4 pb-1 md:mx-auto md:max-w-[880px] md:px-6">
             {similar.map((b) => <BookTile key={b.id} book={b} width={120} />)}
           </div>
         </section>
       )}
 
-      <div className="fixed inset-x-0 bottom-[54px] z-20 flex gap-2.5 border-t border-line bg-white px-4 pb-3.5 pt-2.5 lg:hidden">
-        <Link href={firstAudio?.url ? '#' : `/vhod/?follow=book:${book.id}`} className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white">
-          {firstAudio?.url ? 'Слушать бесплатно' : 'Сообщить о проде'}
+      <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-line bg-white px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
+        {/* Главное действие: слушать, если есть аудио; ждать проду, если книга пишется; иначе — на полку. */}
+        <Link
+          href={firstAudio?.url ? '#listen' : book.status === 'ongoing' ? `/vhod/?follow=book:${book.id}` : `/vhod/?shelf=${book.id}`}
+          className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white"
+        >
+          {firstAudio?.url ? 'Слушать бесплатно' : book.status === 'ongoing' ? 'Сообщить о проде' : 'Хочу послушать'}
         </Link>
         <Link href={`/vhod/?shelf=${book.id}`} aria-label="Добавить на полку" className="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-petal bg-white">
           <BookmarkIcon color="#9C2B4E" />

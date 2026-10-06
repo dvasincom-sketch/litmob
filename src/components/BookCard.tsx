@@ -54,7 +54,7 @@ export function BookList({ books, ranked = false, empty }: { books: Book[]; rank
   if (!books.length)
     return <p className="rounded-[14px] border border-dashed border-petal bg-white/60 p-4 text-sm text-muted">{empty || 'Скоро здесь появятся книги. Подпишитесь на сюжет — сообщим о первых.'}</p>
   return (
-    <div className="grid gap-3 lg:grid-cols-2">
+    <div className="grid gap-3 md:grid-cols-2">
       {books.map((b, i) => (
         <BookRow key={b.id} book={b} rank={ranked ? i + 1 : undefined} />
       ))}

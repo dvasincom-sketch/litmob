@@ -10,7 +10,7 @@ export function Breadcrumbs({ items, light = false }: { items: Crumb[]; light?: 
     <>
       <nav aria-label="Хлебные крошки" className={`text-xs ${light ? 'text-blush' : 'text-muted'}`}>
         {all.map((c, i) => (
-          <span key={c.href}>
+          <span key={c.href} className={i > 0 && i < all.length - 2 ? 'hidden md:inline' : undefined}>
             {i > 0 && ' › '}
             {i < all.length - 1 ? <Link href={c.href}>{c.label}</Link> : <span>{c.label}</span>}
           </span>

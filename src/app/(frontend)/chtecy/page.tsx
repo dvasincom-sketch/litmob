@@ -15,7 +15,7 @@ export default async function Narrators() {
   const payload = await getPayloadClient()
   const res = await payload.find({ collection: 'narrators', where: { published: { equals: true } }, limit: 200, depth: 0, sort: 'name' })
   return (
-    <Wrap className="flex flex-col gap-4  py-6 lg:py-10">
+    <Wrap className="flex flex-col gap-4  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Чтецы', href: '/chtecy/' }]} />
       <h1 className="text-3xl">Чтецы аудиокниг</h1>
       {res.docs.length === 0 ? <p className="text-muted">Скоро здесь появятся чтецы. Вы чтец? Напишите нам — подключим кабинет.</p> : (

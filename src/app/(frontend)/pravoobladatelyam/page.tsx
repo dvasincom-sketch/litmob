@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'Правообладателям | �
 
 export default function Rights() {
   return (
-    <Wrap className="prose-lm flex flex-col gap-2  py-6 lg:py-10">
+    <Wrap className="prose-lm flex flex-col gap-2  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Правообладателям', href: '/pravoobladatelyam/' }]} />
       <h1 className="text-3xl">Правообладателям и авторам</h1>
       <p>Справочные страницы книг содержат только наше описание и ссылки на площадку автора — без текста книги, обложек и аудио.</p>

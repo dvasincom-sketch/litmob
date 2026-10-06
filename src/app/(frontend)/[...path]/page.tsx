@@ -45,9 +45,9 @@ export default async function CatchAll({ params }: Props) {
   return (
     <article>
       <header className="on-dark bg-wine text-white">
-        <Wrap className="flex flex-col gap-3.5 pb-6 pt-3.5 lg:pb-10 lg:pt-6">
+        <Wrap className="flex flex-col gap-3.5 pb-6 pt-3.5 md:pb-10 md:pt-6">
           <Breadcrumbs items={[{ label: p.title, href: p.path || '/' }]} light />
-          <h1 className="max-w-4xl text-[28px] lg:text-[44px]">{p.h1 || p.title}</h1>
+          <h1 className="max-w-4xl text-[28px] md:text-[44px]">{p.h1 || p.title}</h1>
           {p.lead && <p className="max-w-3xl text-blush">{p.lead}</p>}
           {p.cta?.href && p.cta.label && (
             <Link href={p.cta.href} className="self-start rounded-xl bg-white px-[18px] py-3 font-semibold text-wine">

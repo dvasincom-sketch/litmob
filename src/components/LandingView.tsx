@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { trendLabel } from '@/lib/trend'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Book, Collection, Genre, Series, Trope } from '@/payload-types'
 import { BookList } from './BookCard'
@@ -23,7 +24,7 @@ export type LandingProps = {
   adultGateText?: string
 }
 
-const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="mb-2.5 text-xl lg:text-2xl">{children}</h2>
+const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="mb-3.5 text-xl md:text-2xl">{children}</h2>
 
 /** Страница сюжета / жанра / подборки — по макету Trope.dc (шаги ①–⑦). */
 export function LandingView({ doc, crumbs, books, totalBooks, audioCount, children = [], tiles = [], related = [], audioChild, adultGateText }: LandingProps) {
@@ -44,7 +45,7 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
     ).values(),
   )
   const listing = (
-    <section className="mt-6">
+    <section className="mt-8">
       <H2>{audioOnly ? 'Аудиокниги' : tiles.length ? 'Лучшие книги семейства' : 'Лучшие книги сюжета'}</H2>
       <BookList books={books} ranked={!audioOnly} />
     </section>
@@ -53,11 +54,11 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
   return (
     <article>
       <header className="on-dark bg-wine text-white">
-        <Wrap className="flex flex-col gap-3.5 pb-[22px] pt-3.5 lg:pb-10 lg:pt-6">
+        <Wrap className="flex flex-col gap-3.5 pb-[22px] pt-3.5 md:pb-10 md:pt-6">
           <Breadcrumbs items={crumbs} light />
-          <h1 className="max-w-4xl text-[28px] lg:text-[44px]">{h1}</h1>
+          <h1 className="max-w-4xl text-[28px] md:text-[44px]">{h1}</h1>
           {(doc.lead || counter) && (
-            <p className="max-w-3xl text-sm text-blush lg:text-base">
+            <p className="max-w-3xl text-sm text-blush md:text-base">
               {doc.lead} {counter}
             </p>
           )}
@@ -71,7 +72,7 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
 
       <Wrap className="pb-12">
         {children.length > 0 && (
-          <section className="mt-6">
+          <section className="mt-8">
             <H2>Уточните сюжет</H2>
             <div className="flex flex-wrap gap-2">
               {children.map((c) => (
@@ -84,14 +85,14 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
         )}
 
         {tiles.length > 0 && (
-          <section className="mt-6">
+          <section className="mt-8">
             <H2>Сюжеты</H2>
-            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3">
               {tiles.map((t) => (
                 <Link key={t.id} href={t.path || '#'} className="flex flex-col gap-1 rounded-[14px] border border-line bg-white p-3.5">
                   <span className="font-semibold">{t.title}</span>
                   {t.subtitle && <span className="text-xs text-muted">{t.subtitle}</span>}
-                  {t.growth && <span className="text-xs font-semibold text-rose">{t.growth === 'новый' ? 'Новый сюжет' : `Интерес ${t.growth} за год`}</span>}
+                  {trendLabel(t.growth) && <span className="self-start rounded-full bg-blush px-2 py-0.5 text-xs font-semibold text-rose">{trendLabel(t.growth)}</span>}
                 </Link>
               ))}
             </div>
@@ -107,7 +108,7 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
         )}
 
         {!audioOnly && audioChild?.path && (
-          <section id="audio" className="on-dark mt-6 flex flex-col gap-2.5 rounded-2xl bg-wine p-4 text-white lg:p-6">
+          <section id="audio" className="on-dark mt-8 flex flex-col gap-2.5 rounded-2xl bg-wine p-4 text-white md:p-6">
             <span className="font-display text-xl">Слушать: аудиоверсии</span>
             <span className="text-sm text-blush">
               {audioCount ? `${audioCount} ${plural(audioCount, 'аудиокнига', 'аудиокниги', 'аудиокниг')} по сюжету. ` : ''}Первая глава бесплатно, дальше по подписке.
@@ -119,9 +120,9 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
         )}
 
         {series.length > 0 && (
-          <section className="mt-6">
+          <section className="mt-8">
             <H2>Серии по порядку</H2>
-            <div className="grid gap-2.5 lg:grid-cols-2">
+            <div className="grid gap-2.5 md:grid-cols-2">
               {series.map((s) => (
                 <Link key={s.id} href={s.path || '#'} className="flex flex-col gap-1 rounded-[14px] border border-line bg-white px-3.5 py-3">
                   <span className="font-semibold">{s.title}</span>
@@ -143,7 +144,7 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
         {related.length > 0 && (
           <section className="mt-8">
             <H2>Похожие сюжеты</H2>
-            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
               {related.map((r) => (
                 <Link key={r.id} href={r.path || '#'} className="rounded-xl border border-line bg-white p-3 text-sm font-semibold">
                   {r.title}

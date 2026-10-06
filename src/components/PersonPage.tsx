@@ -27,7 +27,7 @@ export async function PersonPage({ kind, slug }: { kind: Kind; slug: string }) {
   const books = await getBooksWhere(CFG[kind].key, doc.id, CFG[kind].sort)
   const crumbs = [...(CFG[kind].crumb ? [CFG[kind].crumb!] : []), { label: name, href: doc.path }]
   return (
-    <Wrap className="flex flex-col gap-4  py-6 lg:py-10">
+    <Wrap className="flex flex-col gap-4  py-6 md:py-10">
       <Breadcrumbs items={crumbs} />
       <h1 className="text-3xl">{CFG[kind].h1(name)}</h1>
       {(doc.lead || doc.about) && <p className="max-w-2xl text-muted">{doc.lead || doc.about}</p>}

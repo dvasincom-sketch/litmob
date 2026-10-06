@@ -11,7 +11,7 @@ export default async function Genres() {
   const payload = await getPayloadClient()
   const res = await payload.find({ collection: 'genres', where: { published: { equals: true }, parent: { exists: false } }, limit: 100, depth: 0, sort: 'title' })
   return (
-    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
+    <Wrap className="flex flex-col gap-6  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Жанры', href: '/zhanr/' }]} />
       <h1 className="text-3xl">Жанры</h1>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

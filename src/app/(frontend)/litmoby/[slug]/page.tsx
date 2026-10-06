@@ -25,7 +25,7 @@ export default async function LitmobPage({ params }: Props) {
   const books = entries.map((e) => e.book).filter((b) => b && typeof b === 'object')
   const trope = l.trope && typeof l.trope === 'object' ? l.trope : null
   return (
-    <Wrap className="flex flex-col gap-6  py-6 lg:py-10">
+    <Wrap className="flex flex-col gap-6  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }, { label: l.title, href: l.path }]} />
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl">Литмоб «{l.title}»</h1>
