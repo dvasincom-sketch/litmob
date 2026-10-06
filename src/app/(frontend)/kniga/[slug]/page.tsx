@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { RichText } from '@payloadcms/richtext-lexical/react'
-import type { Audio, Author, Book, Narrator, Series, Trope } from '@/payload-types'
+import type { Audio, Media, Author, Book, Narrator, Series, Trope } from '@/payload-types'
 import { BookTile } from '@/components/BookCard'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Cover } from '@/components/Cover'
@@ -14,27 +14,56 @@ import { Wrap } from '@/components/Wrap'
 import { getBookBySlug, getBooksFor, getBooksWhere, getChaptersOf } from '@/lib/data'
 import { plural } from '@/lib/home'
 import { SITE_URL } from '@/lib/payload'
-import { buildMetadata } from '@/lib/seo'
+import { brand, buildMetadata, sentences } from '@/lib/seo'
 import { getViewer, getViewerState } from '@/lib/session'
 
 type Props = { params: Promise<{ slug: string }> }
 const objs = <T,>(v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === 'object') : []) as T[]
 
+const HEAT: Record<string, string> = { none: 'Без откровенных сцен', moderate: 'Умеренно откровенно', explicit: '18+' }
+const STATUS: Record<string, string> = { ongoing: 'Пишется', completed: 'Завершена', frozen: 'Заморожена' }
+
+/** Title по шаблону из «Структуры»: [Название] — слушать аудиокнигу, [Автор], читает [Чтец]. */
 function titleFor(b: Book) {
   const authors = objs<Author>(b.authors).map((a) => a.name).join(', ')
   const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
   const tr = b.isTranslation && b.originalTitle ? ` (${b.originalTitle} на русском)` : ''
-  return `${b.title}${tr} — ${b.hasAudio ? 'слушать аудиокнигу' : 'читать'}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''} | Литмоб`
+  const action = b.hasAudio ? 'слушать аудиокнигу' : b.status === 'completed' ? 'читать полностью' : 'читать книгу'
+  const full = `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''}`
+  return brand(full.length > 70 && narr ? `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}` : full)
+}
+
+function descriptionFor(b: Book, chapters: number) {
+  const authors = objs<Author>(b.authors).map((a) => a.name).join(', ')
+  const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
+  const facts = [
+    STATUS[b.status || 'ongoing'],
+    chapters ? `${chapters} ${plural(chapters, 'глава', 'главы', 'глав')}` : null,
+    b.hasAudio && b.audioHours ? `аудиокнига ${b.audioHours} ч` : null,
+    b.happyEnding === 'yes' ? 'счастливый конец' : null,
+  ].filter(Boolean).join(', ')
+  return sentences(
+    `«${b.title}»${authors ? ` — ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''}`,
+    b.hook,
+    facts,
+    b.hasAudio ? 'Первая глава бесплатно' : 'Подпишитесь — сообщим о проде и озвучке',
+  )
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const book = await getBookBySlug((await params).slug)
   if (!book) return {}
-  return buildMetadata({ ...book, lead: book.hook }, { fallbackTitle: titleFor(book) })
+  const chapters = await getChaptersOf(book.id)
+  const cover = book.cover && typeof book.cover === 'object' ? (book.cover as { url?: string | null }).url : null
+  return buildMetadata({ ...book, lead: book.hook }, {
+    title: titleFor(book),
+    description: descriptionFor(book, chapters.length),
+    kicker: book.hasAudio ? 'Аудиокнига' : 'Книга',
+    image: cover || null,
+    type: 'book',
+  })
 }
 
-const HEAT: Record<string, string> = { none: 'Без откровенных сцен', moderate: 'Умеренно откровенно', explicit: '18+' }
-const STATUS: Record<string, string> = { ongoing: 'Пишется', completed: 'Завершена', frozen: 'Заморожена' }
 const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="text-xl md:text-2xl">{children}</h2>
 
 /** Страница книги — по макету Book.dc (шаги ①–⑨). */
@@ -144,7 +173,7 @@ export default async function BookPage({ params }: Props) {
 
         {chapters.length > 0 && (
           <section className="flex flex-col gap-2.5">
-            <H2>Главы</H2>
+            <H2>Главы книги «{book.title}»</H2>
             <div className="flex flex-col rounded-[14px] border border-line bg-white">
               {shown.map((c, i) => {
                 const s = chapterState(i, c)
@@ -180,7 +209,7 @@ export default async function BookPage({ params }: Props) {
         </section>
 
         <section className="flex flex-col gap-2.5">
-          <H2>О чём книга</H2>
+          <H2>О чём книга «{book.title}»</H2>
           {book.about ? <div className="prose-lm"><RichText data={book.about} /></div> : book.hook ? <p className="text-ink-2">{book.hook}</p> : null}
           {tropes.length > 0 && (
             <p className="text-[13px] text-muted">
@@ -195,7 +224,7 @@ export default async function BookPage({ params }: Props) {
 
         {narrators.length > 0 && (
           <section className="flex flex-col gap-2.5">
-            <H2>Озвучка</H2>
+            <H2>{book.hasAudio ? `Аудиокнига «${book.title}»: кто читает` : 'Озвучка'}</H2>
             {narrators.map((n) => (
               <div key={n.id} className="flex items-center gap-3 rounded-[14px] border border-line bg-white p-3">
                 <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-petal font-display text-lg text-cover-ink">{n.name.slice(0, 1)}</span>
@@ -211,7 +240,7 @@ export default async function BookPage({ params }: Props) {
 
         {series && seriesBooks.length > 1 && (
           <section className="flex flex-col gap-2.5">
-            <H2>Серия по порядку</H2>
+            <H2>{series ? `${series.title}: книги по порядку` : 'Серия по порядку'}</H2>
             <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3">
               {seriesBooks.map((s) =>
                 s.id === book.id ? (
@@ -239,7 +268,7 @@ export default async function BookPage({ params }: Props) {
 
       {similar.length > 0 && (
         <section className="mt-6 flex flex-col gap-3">
-          <Wrap><H2>Если понравилось</H2></Wrap>
+          <Wrap><H2>Похожие книги: если понравилось «{book.title}»</H2></Wrap>
           <div className="scroll-row px-4 pb-1 md:mx-auto md:max-w-[1240px] md:px-6">
             {similar.map((b) => <BookTile key={b.id} book={b} width={120} />)}
           </div>
@@ -259,10 +288,17 @@ export default async function BookPage({ params }: Props) {
           '@type': book.hasAudio ? ['Book', 'Audiobook'] : 'Book',
           name: book.title,
           url: `${SITE_URL}${book.path}`,
-          author: authors.map((a) => ({ '@type': 'Person', name: a.name })),
-          ...(narrators.length ? { readBy: narrators.map((n) => ({ '@type': 'Person', name: n.name })) } : {}),
+          ...(book.hook ? { description: book.hook } : {}),
+          ...(book.cover && typeof book.cover === 'object' && (book.cover as Media).url ? { image: (book.cover as Media).url } : {}),
+          author: authors.map((a) => ({ '@type': 'Person', name: a.name, ...(a.path ? { url: `${SITE_URL}${a.path}` } : {}) })),
+          ...(narrators.length ? { readBy: narrators.map((n) => ({ '@type': 'Person', name: n.name, ...(n.path ? { url: `${SITE_URL}${n.path}` } : {}) })) } : {}),
+          ...(book.hasAudio ? { bookFormat: 'https://schema.org/AudiobookFormat', ...(book.audioHours ? { duration: `PT${Math.round(book.audioHours * 60)}M` } : {}) } : {}),
+          ...(tropes.length ? { genre: tropes.map((t) => t.title), keywords: tropes.map((t) => t.mainQuery || t.title).join(', ') } : {}),
+          ...(book.publishedAt ? { datePublished: book.publishedAt.slice(0, 10) } : {}),
+          ...(book.isTranslation && book.originalTitle ? { translationOfWork: { '@type': 'Book', name: book.originalTitle } } : {}),
           inLanguage: 'ru',
-          ...(series ? { isPartOf: { '@type': 'BookSeries', name: series.title } } : {}),
+          ...(series ? { isPartOf: { '@type': 'BookSeries', name: series.title, ...(series.path ? { url: `${SITE_URL}${series.path}` } : {}) }, ...(book.series?.order ? { position: book.series.order } : {}) } : {}),
+          ...(book.hasAudio ? { publisher: { '@type': 'Organization', name: 'Литмоб', url: SITE_URL } } : {}),
         }}
       />
     </article>

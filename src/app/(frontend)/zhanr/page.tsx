@@ -1,18 +1,19 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { staticMetadata } from '@/lib/seo'
 import { GenreArt } from '@/components/GenreArt'
 import { PageHero } from '@/components/PageHero'
 import { Wrap } from '@/components/Wrap'
 import { getBookCounts } from '@/lib/data'
 import { plural } from '@/lib/home'
-import { getPayloadClient, SITE_URL } from '@/lib/payload'
+import { getPayloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = {
-  title: 'Жанры книг и аудиокниг: любовное фэнтези, попаданцы, детективы | Литмоб',
-  description: 'Все жанры Литмоба: любовное и бытовое фэнтези, попаданки и попаданцы, академии магии, ЛитРПГ, боярка, детективы и аудиорассказы.',
-  alternates: { canonical: `${SITE_URL}/zhanr/` },
-}
+export const metadata: Metadata = staticMetadata(
+  '/zhanr/',
+  'Жанры книг и аудиокниг: любовное фэнтези, попаданцы, детективы',
+  'Жанры Литмоба: любовное и бытовое фэнтези, попаданки и попаданцы, академии магии, ЛитРПГ, боярка, детективы и аудиорассказы. Читайте и слушайте онлайн.',
+)
 
 export default async function Genres() {
   const payload = await getPayloadClient()
@@ -22,7 +23,7 @@ export default async function Genres() {
   ])
   return (
     <>
-      <PageHero crumbs={[{ label: 'Жанры', href: '/zhanr/' }]} title="Жанры" lead="От уютного бытового фэнтези до детективов. Внутри каждого жанра — сюжеты, серии по порядку и аудиоверсии." />
+      <PageHero crumbs={[{ label: 'Жанры', href: '/zhanr/' }]} title="Жанры книг и аудиокниг" lead="От уютного бытового фэнтези до детективов. Внутри каждого жанра — сюжеты, серии по порядку и аудиоверсии." />
       <Wrap className="py-8 md:py-12">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {res.docs.map((g) => {

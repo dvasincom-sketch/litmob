@@ -8,6 +8,7 @@ import { getChildren, getFamilyTropes, getGenreByPath, getSettings, getTropeByPa
 import { getPayloadClient } from './payload'
 import { joinPath } from './paths'
 import { buildMetadata } from './seo'
+import { landingSeo } from './landingSeo'
 
 type Kind = 'tropes' | 'genres' | 'collections'
 const pub: Where = { published: { equals: true } }
@@ -45,6 +46,7 @@ async function load(kind: Kind, path: string) {
     const books = await findBooks(or.length ? [{ or }] : [], Boolean(doc.audioOnly))
     return {
       doc, books: books.docs, totalBooks: books.total, audioCount: books.audio,
+      seo: landingSeo('collections', { doc, totalBooks: books.total, audioCount: books.audio }),
       crumbs: [{ label: 'Подборки', href: '/podborki/' }, { label: doc.title, href: doc.path || path }],
       related: objs<Trope>(doc.tropes), adultGateText, indexable: books.total >= minBooks,
     }
@@ -77,6 +79,7 @@ async function load(kind: Kind, path: string) {
 
   return {
     doc, crumbs, books: books.docs, totalBooks: books.total, audioCount: books.audio,
+    seo: landingSeo(kind, { doc, parent, totalBooks: books.total, audioCount: books.audio, tiles }),
     children: chips as (Trope | Genre)[], tiles,
     related: kind === 'tropes' ? objs<Trope>((doc as Trope).related) : objs<Trope>((doc as Genre).tropes),
     audioChild: doc.audioOnly ? null : audioChild, adultGateText,
@@ -87,9 +90,7 @@ async function load(kind: Kind, path: string) {
 export async function landingMetadata(kind: Kind, segments: string[], prefix: string): Promise<Metadata> {
   const data = await load(kind, joinPath(prefix, ...segments))
   if (!data) return {}
-  const d = data.doc
-  const tail = 'audioOnly' in d && d.audioOnly ? 'слушать первую главу бесплатно' : 'читать и слушать'
-  return buildMetadata(d, { fallbackTitle: `${d.h1 || d.title} — ${tail} | Литмоб`, indexable: data.indexable })
+  return buildMetadata(data.doc, { title: data.seo.title, description: data.seo.description, indexable: data.indexable, kicker: data.seo.kicker })
 }
 
 export async function hasLanding(kind: Kind, path: string) {

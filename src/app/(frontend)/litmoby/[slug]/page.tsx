@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { BookCard } from '@/components/BookCard'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getApprovedEntries, getLitmobBySlug } from '@/lib/data'
-import { buildMetadata } from '@/lib/seo'
+import { brand, buildMetadata, sentences } from '@/lib/seo'
 import { FollowButton } from '@/components/ActionButtons'
 import { getViewer, getViewerState } from '@/lib/session'
 
@@ -17,7 +17,11 @@ const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString('ru-RU', 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const l: any = await getLitmobBySlug((await params).slug)
   if (!l) return {}
-  return buildMetadata({ ...l, lead: l.pitch }, { fallbackTitle: `Литмоб «${l.title}»: читать все книги литмоба | Литмоб` })
+  return buildMetadata({ ...l, lead: l.pitch }, {
+    title: brand(`Литмоб «${l.title}»: все книги литмоба — читать и слушать`),
+    description: sentences(`Литмоб «${l.title}» — книги разных авторов на один сюжет`, l.pitch, l.status === 'recruiting' ? 'Идёт набор авторов: вступайте или подпишитесь на проду' : 'Читайте и слушайте все книги литмоба, подписывайтесь на проду участников'),
+    kicker: 'Литмоб',
+  })
 }
 
 export default async function LitmobPage({ params }: Props) {

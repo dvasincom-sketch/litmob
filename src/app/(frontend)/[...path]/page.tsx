@@ -9,7 +9,7 @@ import { Wrap } from '@/components/Wrap'
 import { hasLanding, LandingPage, landingMetadata } from '@/lib/landing'
 import { getPayloadClient } from '@/lib/payload'
 import { joinPath } from '@/lib/paths'
-import { buildMetadata } from '@/lib/seo'
+import { brand, buildMetadata, cap, low, sentences } from '@/lib/seo'
 
 type Props = { params: Promise<{ path: string[] }> }
 
@@ -32,7 +32,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { path } = await params
   const r = await resolve(path)
   if (!r) return {}
-  if (r.type === 'page') return buildMetadata(r.page, { fallbackTitle: `${r.page.h1 || r.page.title} | Литмоб` })
+  if (r.type === 'page') {
+    const h1 = r.page.h1 || r.page.title
+    const q = r.page.mainQuery || ''
+    // Главный запрос — в начало title, если его нет в H1.
+    let title = q && !h1.toLowerCase().includes(q.toLowerCase()) ? `${cap(q)} — ${low(h1)}` : h1
+    if (title.length < 30) title = `${title} — Литмоб, книги и аудиокниги любовного фэнтези`
+    const tail: Record<string, string> = {
+      authors: 'Гид Литмоба для авторов: публикация, литмобы, озвучка книг',
+      narrators: 'Гид Литмоба для чтецов: как начать озвучивать книги и зарабатывать',
+      article: 'Литмоб — книги и аудиокниги любовного фэнтези по сюжетам',
+      service: 'Литмоб — книги и аудиокниги любовного фэнтези по сюжетам',
+    }
+    const lead = r.page.lead || ''
+    const description = lead.length >= 110 ? lead : sentences(lead || h1, tail[r.page.section || 'service'])
+    return buildMetadata(r.page, { title: brand(title), description, kicker: 'Литмоб' })
+  }
   return landingMetadata(r.type, path, '')
 }
 

@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
+import { staticMetadata } from '@/lib/seo'
 import { Wrap } from '@/components/Wrap'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { SITE_URL } from '@/lib/payload'
 
-export const metadata: Metadata = {
-  title: 'Что такое литмоб и как участвовать: правила | Литмоб',
-  description: 'Правила литмобов: как создать литмоб, как вступить автору, сроки, модерация и голосование.',
-  alternates: { canonical: `${SITE_URL}/litmoby/pravila/` },
-}
+export const metadata: Metadata = staticMetadata(
+  '/litmoby/pravila/',
+  'Что такое литмоб и как участвовать: правила | Литмоб',
+  'Что такое литмоб в литературе и как в нём участвовать: как создать литмоб, как вступить автору, сроки, модерация, озвучка и голосование.',
+)
 
 export default function Rules() {
   return (

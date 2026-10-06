@@ -39,7 +39,7 @@ for (const f of FAMILIES) {
       await upsert('tropes', { and: [{ slug: { equals: r.slug } }, { parent: { equals: id } }] }, {
         title: r.title, slug: r.slug, kind: 'refinement', parent: id, audioOnly: r.audio ?? false, adult: t.adult ?? false,
         // «С генералом», «После развода» читаются только вместе с сюжетом; остальные уточнения — самостоятельные.
-        h1: r.audio ? `${t.title}: аудиокниги` : /^(С|После) /.test(r.title) ? `${t.title}: ${r.title.toLowerCase()}` : `${r.title}: книги и аудиокниги`,
+        h1: null, // H1 строит шаблон src/lib/landingSeo.ts
         lead: r.lead ?? (r.audio ? `Аудиокниги по сюжету «${t.title}» в исполнении профессиональных чтецов. Первая глава бесплатно.` : `${t.lead} Подборка книг с уточнением «${r.title.toLowerCase()}».`),
         published: true, ...demand(r),
       })
@@ -59,7 +59,7 @@ for (const g of GENRES) {
   const where: Where = parent ? { and: [{ slug: { equals: g.slug } }, { parent: { equals: parent } }] } : { and: [{ slug: { equals: g.slug } }, { parent: { exists: false } }] }
   const id = await upsert('genres', where, {
     title: g.title, slug: g.slug, parent, audioOnly: g.audio ?? false, customPath: g.customPath, subtitle: g.sub,
-    h1: g.audio ? `${GENRES.find((x) => x.slug === g.parent && !x.parent)?.title}: аудиокниги` : `${g.title}: книги и аудиокниги`,
+    h1: null, // H1 строит шаблон src/lib/landingSeo.ts
     lead: g.lead, tropes: g.tropes?.map((s) => tropeIds.get(s)!).filter(Boolean), published: true, ...demand(g),
   })
   if (!parent) genreIds.set(g.slug, id)

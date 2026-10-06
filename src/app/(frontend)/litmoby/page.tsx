@@ -1,17 +1,17 @@
 import Link from 'next/link'
 import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
+import { staticMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Faq } from '@/components/Faq'
 import { getLitmobs } from '@/lib/data'
-import { SITE_URL } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = {
-  title: 'Литмобы: читать книги литмобов, развод, попаданка, драконы | Литмоб',
-  description: 'Все литмобы: серии книг разных авторов на один сюжет. Читайте и слушайте, подписывайтесь на проду всех участников или создайте свой литмоб.',
-  alternates: { canonical: `${SITE_URL}/litmoby/` },
-}
+export const metadata: Metadata = staticMetadata(
+  '/litmoby/',
+  'Литмобы: книги разных авторов на один сюжет | Литмоб',
+  'Все литмобы: серии книг разных авторов на один сюжет — развод, попаданка, драконы. Читайте и слушайте, подписывайтесь на проду участников или создайте свой литмоб.',
+)
 
 const STATUS: Record<string, string> = { recruiting: 'Набор авторов', running: 'Идёт', voting: 'Голосование', finished: 'Завершён' }
 
@@ -27,7 +27,7 @@ export default async function Litmobs() {
     <Wrap className="flex flex-col gap-6  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Литмобы', href: '/litmoby/' }]} />
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-3xl">Литмобы</h1>
+        <h1 className="text-3xl">Литмобы: книги разных авторов на один сюжет</h1>
         <Link href="/litmoby/sozdat/" className="rounded-xl bg-rose px-4 py-2 font-semibold text-white no-underline">Создать литмоб</Link>
       </div>
       {list.length === 0 ? (

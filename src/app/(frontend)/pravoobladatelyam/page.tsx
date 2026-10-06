@@ -1,9 +1,13 @@
 import type { Metadata } from 'next'
+import { staticMetadata } from '@/lib/seo'
 import { Wrap } from '@/components/Wrap'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { SITE_URL } from '@/lib/payload'
 
-export const metadata: Metadata = { title: 'Правообладателям | Литмоб', alternates: { canonical: `${SITE_URL}/pravoobladatelyam/` } }
+export const metadata: Metadata = staticMetadata(
+  '/pravoobladatelyam/',
+  'Правообладателям и авторам: подтвердить или удалить страницу | Литмоб',
+  'Как автору или правообладателю подтвердить страницу книги на Литмобе, добавить ссылки и озвучку или удалить страницу.',
+)
 
 export default function Rights() {
   return (

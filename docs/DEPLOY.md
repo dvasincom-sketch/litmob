@@ -77,8 +77,9 @@ Apps → Создать → **Dockerfile** → репозиторий `dvasincom
 
 ## 6. После запуска
 
-- Яндекс Вебмастер и Google Search Console: добавить сайт, указать
-  `https://litmob.ru/sitemap.xml`.
+- Яндекс Вебмастер и Google Search Console: добавить сайт, выбрать подтверждение
+  мета-тегом и положить код в `YANDEX_VERIFICATION` / `GOOGLE_SITE_VERIFICATION`
+  (только значение `content`), передеплоить, указать `https://litmob.ru/sitemap.xml`.
 - В карту сайта попадают главная, хабы семейств и литмобы; страница сюжета
   или жанра появляется в ней, когда набирает `minBooksToIndex` книг
   (по умолчанию 5, Админка → Настройки сайта). До этого — `noindex`.

@@ -1,15 +1,16 @@
 import Link from 'next/link'
 import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
+import { staticMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { getPayloadClient, SITE_URL } from '@/lib/payload'
+import { getPayloadClient } from '@/lib/payload'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = {
-  title: 'Чтецы аудиокниг: слушать голоса | Литмоб',
-  description: 'Профессиональные чтецы любовного фэнтези, попаданцев и ЛитРПГ. Послушайте голос и выберите книгу.',
-  alternates: { canonical: `${SITE_URL}/chtecy/` },
-}
+export const metadata: Metadata = staticMetadata(
+  '/chtecy/',
+  'Чтецы аудиокниг: слушать голоса онлайн | Литмоб',
+  'Профессиональные чтецы любовного фэнтези, попаданцев и ЛитРПГ. Послушайте голос чтеца и выберите аудиокнигу в его исполнении — первая глава бесплатно.',
+)
 
 export default async function Narrators() {
   const payload = await getPayloadClient()
@@ -17,7 +18,7 @@ export default async function Narrators() {
   return (
     <Wrap className="flex flex-col gap-4  py-6 md:py-10">
       <Breadcrumbs items={[{ label: 'Чтецы', href: '/chtecy/' }]} />
-      <h1 className="text-3xl">Чтецы аудиокниг</h1>
+      <h1 className="text-3xl">Чтецы аудиокниг: слушать голоса</h1>
       {res.docs.length === 0 ? <p className="text-muted">Скоро здесь появятся чтецы. Вы чтец? Напишите нам — подключим кабинет.</p> : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {res.docs.map((n) => (

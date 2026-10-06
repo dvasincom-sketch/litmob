@@ -1,16 +1,16 @@
 import Link from 'next/link'
 import { TropeTile } from '@/components/TropeTile'
 import type { Metadata } from 'next'
+import { staticMetadata } from '@/lib/seo'
 import { PageHero } from '@/components/PageHero'
 import { Wrap } from '@/components/Wrap'
 import { getAllFamilies, getBookCounts, getFamilyTropes } from '@/lib/data'
-import { SITE_URL } from '@/lib/payload'
 
-export const metadata: Metadata = {
-  title: 'Тропы в книгах: каталог сюжетов любовного фэнтези и попаданцев | Литмоб',
-  description: 'Все книжные тропы по семействам: развод и брак, истинная пара и оборотни, академии, попаданки, бытовое фэнтези, мужские сюжеты.',
-  alternates: { canonical: `${SITE_URL}/tropy/` },
-}
+export const metadata: Metadata = staticMetadata(
+  '/tropy/',
+  'Тропы в книгах: каталог сюжетов любовного фэнтези | Литмоб',
+  'Все книжные тропы по семействам: развод с драконом, истинная пара, академии и отбор невест, попаданки, бытовое фэнтези, мужские сюжеты. Книги и аудиокниги.',
+)
 
 export default async function TropesCatalog() {
   const families = await getAllFamilies()

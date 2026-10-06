@@ -5,7 +5,18 @@ import { BookTile, names } from '@/components/BookCard'
 import { Cover } from '@/components/Cover'
 import { PlayButton, type Track } from '@/components/Player'
 import { SectionHead, Wrap } from '@/components/Wrap'
+import type { Metadata } from 'next'
+import { JsonLd } from '@/components/JsonLd'
 import { getHomeData, plural } from '@/lib/home'
+import { SITE_URL } from '@/lib/payload'
+import { staticMetadata } from '@/lib/seo'
+
+export const metadata: Metadata = staticMetadata(
+  '/',
+  'Любовное фэнтези: книги и аудиокниги по сюжетам | Литмоб',
+  'Развод с драконом, истинная пара, попаданка, бытовое фэнтези и академии магии: книги и аудиокниги по сюжетам. Первая глава бесплатно, профессиональные чтецы, литмобы.',
+  { kicker: 'Литмоб' },
+)
 
 /**
  * Главная (вариант А). Порядок по важности для читательницы: что послушать
@@ -25,8 +36,8 @@ export default async function Home() {
       <section className="on-dark bg-wine text-white">
         <Wrap className="grid gap-8 pb-7 pt-5 lg:grid-cols-[minmax(0,1fr)_360px] md:items-end md:pb-14 md:pt-12">
           <div className="flex min-w-0 flex-col gap-[18px]">
-            <p className="hidden text-[13px] uppercase tracking-[0.12em] text-pink md:block">Ромфант, попаданки, бытовое фэнтези</p>
-            <h1 className="text-[30px] md:text-[clamp(34px,4.2vw,54px)]">Истории о любви и драконах, которые хочется слушать</h1>
+            <h1 className="font-sans text-[12px] font-normal uppercase tracking-[0.12em] text-pink md:text-[13px]">Любовное фэнтези и ромфант: книги и аудиокниги по сюжетам</h1>
+            <p className="font-display text-[30px] leading-[1.15] md:text-[clamp(34px,4.2vw,54px)]">Истории о любви и драконах, которые хочется слушать</p>
             <p className="text-blush md:text-lg">Первая глава бесплатно. Профессиональные чтецы.</p>
             <form action="/poisk/" role="search" className="hidden max-w-[640px] gap-2.5 md:flex">
               <label htmlFor="q" className="sr-only">Поиск</label>
@@ -79,7 +90,7 @@ export default async function Home() {
       {d.listening.length > 0 && (
         <section className="pt-7 md:pt-14">
           <Wrap>
-            <SectionHead title="Слушают сейчас" href="/podborki/audio-romfant-mesyaca/" />
+            <SectionHead title="Слушают сейчас: популярные аудиокниги" href="/podborki/audio-romfant-mesyaca/" />
           </Wrap>
           <div className="scroll-row px-4 pb-1 md:mx-auto md:max-w-[1240px] md:px-6">
             {d.listening.map((b) => (
@@ -91,7 +102,7 @@ export default async function Home() {
 
       <section className="pt-7 md:pt-14">
         <Wrap>
-          <SectionHead title="Выберите по сюжету" lead="Вы знаете, какую историю хотите, даже если не знаете названия." />
+          <SectionHead title="Книги по сюжетам: выберите свой троп" lead="Вы знаете, какую историю хотите, даже если не знаете названия." />
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
             {d.tropes.slice(0, 9).map((t, i) => (
               <TropeTile key={t.id} href={t.path || '#'} title={t.title} subtitle={t.subtitle} growth={t.growth} count={d.counts.get(t.id) || { all: 0, audio: 0 }} className={i >= 6 ? 'max-md:hidden' : ''} />
@@ -131,7 +142,7 @@ export default async function Home() {
       {d.collections.length > 0 && (
         <section className="pt-7 md:pt-14">
           <Wrap>
-            <SectionHead title="Подборки, которые ищут" href="/podborki/" />
+            <SectionHead title="Подборки книг и аудиокниг" href="/podborki/" />
             <div className="grid gap-2.5 md:grid-cols-3 md:gap-3.5">
               {d.collections.map((c, i) => (
                 <Link key={c.id} href={c.path || '#'} className={`${i >= 4 ? 'hidden md:flex' : 'flex'} items-center gap-4 rounded-[14px] border border-line bg-white p-4`}>
@@ -150,7 +161,7 @@ export default async function Home() {
       {d.narrators.length > 0 && (
         <section className="pt-7 md:pt-14">
           <Wrap>
-            <SectionHead title="Голоса, которые любят" href="/chtecy/" lead="Послушайте голос — и выберите книгу в его исполнении." />
+            <SectionHead title="Чтецы аудиокниг: голоса, которые любят" href="/chtecy/" lead="Послушайте голос — и выберите книгу в его исполнении." />
             <div className="grid gap-2.5 md:grid-cols-4 md:gap-3.5">
               {d.narrators.map((n) => {
                 const demo = n.demo && typeof n.demo === 'object' ? (n.demo as Audio) : null
@@ -191,6 +202,26 @@ export default async function Home() {
           </Link>
         </Wrap>
       </section>
+      <JsonLd
+        data={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Литмоб',
+            alternateName: 'Litmob',
+            url: `${SITE_URL}/`,
+            inLanguage: 'ru',
+            potentialAction: { '@type': 'SearchAction', target: `${SITE_URL}/poisk/?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Литмоб',
+            url: `${SITE_URL}/`,
+            logo: `${SITE_URL}/apple-icon.png`,
+          },
+        ]}
+      />
     </>
   )
 }
