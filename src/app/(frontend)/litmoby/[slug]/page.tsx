@@ -6,6 +6,8 @@ import { BookCard } from '@/components/BookCard'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getApprovedEntries, getLitmobBySlug } from '@/lib/data'
 import { buildMetadata } from '@/lib/seo'
+import { FollowButton } from '@/components/ActionButtons'
+import { getViewer, getViewerState } from '@/lib/session'
 
 type Props = { params: Promise<{ slug: string }> }
 export const dynamic = 'force-dynamic'
@@ -22,6 +24,8 @@ export default async function LitmobPage({ params }: Props) {
   const l: any = await getLitmobBySlug((await params).slug)
   if (!l) notFound()
   const entries: any[] = await getApprovedEntries(l.id)
+  const viewer = await getViewer()
+  const state = await getViewerState(viewer?.id, { litmob: l.id })
   const books = entries.map((e) => e.book).filter((b) => b && typeof b === 'object')
   const trope = l.trope && typeof l.trope === 'object' ? l.trope : null
   return (
@@ -48,7 +52,7 @@ export default async function LitmobPage({ params }: Props) {
         </div>
       </section>
       <div className="flex flex-wrap gap-3">
-        <Link href={`/vhod/?next=${encodeURIComponent(l.path)}&follow=litmob:${l.id}`} className="rounded-xl bg-rose px-4 py-2 font-semibold text-white no-underline">Сообщать о проде всех участников</Link>
+        <FollowButton target="litmob" id={l.id} followId={state.follow} loggedIn={Boolean(viewer)} returnTo={l.path} label="Сообщать о проде всех участников" doneLabel="Подписаны на литмоб" className="rounded-xl bg-rose px-4 py-2.5 font-semibold text-white" />
         {l.status === 'recruiting' && <Link href={`/vhod/?next=${encodeURIComponent(l.path)}&join=${l.id}`} className="rounded-xl border border-petal bg-white px-4 py-2 no-underline">Подать заявку автором</Link>}
       </div>
       <section>

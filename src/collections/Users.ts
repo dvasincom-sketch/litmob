@@ -9,7 +9,12 @@ import { adminOnlyField, isStaff } from '../access'
 export const Users: CollectionConfig = {
   slug: 'users',
   labels: { singular: 'Пользователь', plural: 'Пользователи' },
-  auth: { tokenExpiration: 60 * 60 * 24 * 30, maxLoginAttempts: 10, lockTime: 10 * 60 * 1000 },
+  auth: {
+    tokenExpiration: 60 * 60 * 24 * 30,
+    maxLoginAttempts: 10,
+    lockTime: 10 * 60 * 1000,
+    cookies: { sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' },
+  },
   admin: { useAsTitle: 'email', defaultColumns: ['email', 'name', 'roles', 'createdAt'], group: 'Люди' },
   access: {
     admin: ({ req }) => isStaff(req.user as any),

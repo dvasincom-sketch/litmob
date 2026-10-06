@@ -1,34 +1,37 @@
 import Link from 'next/link'
-import type { Genre, Trope } from '@/payload-types'
+import type { Audio } from '@/payload-types'
 import { BookTile, names } from '@/components/BookCard'
 import { Cover } from '@/components/Cover'
-import { PlayIcon } from '@/components/Icons'
+import { PlayButton, type Track } from '@/components/Player'
 import { SectionHead, Wrap } from '@/components/Wrap'
 import { getHomeData, plural } from '@/lib/home'
 import { trendLabel } from '@/lib/trend'
 
-const trend = (t: Trope) => trendLabel(t.growth)
-
+/**
+ * Главная (вариант А). Порядок по важности для читательницы: что послушать
+ * сейчас → выбрать сюжет → литмобы (наше отличие) → подборки → голоса.
+ * Жанры перенесены в подвал, блоки для авторов и чтецов — в одну полосу.
+ */
 export default async function Home() {
   const d = await getHomeData()
   const chips = d.tropes.slice(0, 8)
+  const audio = d.firstChapter?.audio && typeof d.firstChapter.audio === 'object' ? (d.firstChapter.audio as Audio) : null
+  const featuredTrack: Track | null =
+    d.featured && audio?.url ? { src: audio.url, title: d.featured.title, subtitle: d.firstChapter?.title || 'Глава 1', href: d.featured.path || '#', key: `ch-${d.firstChapter!.id}` } : null
+  const byline = d.featured ? `${names(d.featured.authors)}${names(d.featured.narrators) ? ` · читает ${names(d.featured.narrators)}` : ''}` : ''
+
   return (
     <>
-      {/* Первый экран: макет MobileWarm + раскладка Main на десктопе */}
       <section className="on-dark bg-wine text-white">
-        <Wrap className="grid gap-8 pb-7 pt-5 md:grid-cols-[minmax(0,1fr)_380px] md:items-end md:pb-14 md:pt-14">
+        <Wrap className="grid gap-8 pb-7 pt-5 md:grid-cols-[minmax(0,1fr)_360px] md:items-end md:pb-14 md:pt-12">
           <div className="flex min-w-0 flex-col gap-[18px]">
             <p className="hidden text-[13px] uppercase tracking-[0.12em] text-pink md:block">Ромфант, попаданки, бытовое фэнтези</p>
             <h1 className="text-[30px] md:text-[clamp(34px,4.2vw,54px)]">Истории о любви и драконах, которые хочется слушать</h1>
             <p className="text-blush md:text-lg">Первая глава бесплатно. Профессиональные чтецы.</p>
-            <form action="/poisk/" role="search" className="hidden max-w-[680px] gap-2.5 md:flex">
-              <label htmlFor="q" className="sr-only">
-                Поиск
-              </label>
+            <form action="/poisk/" role="search" className="hidden max-w-[640px] gap-2.5 md:flex">
+              <label htmlFor="q" className="sr-only">Поиск</label>
               <input id="q" name="q" type="search" placeholder="Книга, автор, сюжет или чтец" className="h-[52px] min-w-0 flex-1 rounded-xl border-0 bg-white px-[18px] text-base text-ink" />
-              <button type="submit" className="h-[52px] rounded-xl bg-rose px-6 font-semibold text-white">
-                Найти
-              </button>
+              <button type="submit" className="h-[52px] rounded-xl bg-rose px-6 font-semibold text-white">Найти</button>
             </form>
             <div className="scroll-row fade-right -mx-4 px-4 pb-0.5 md:mx-0 md:flex-wrap md:px-0 md:[mask-image:none]">
               {chips.map((t) => (
@@ -40,42 +43,36 @@ export default async function Home() {
           </div>
           {d.featured && (
             <aside aria-label="Первая глава бесплатно" className="hidden flex-col gap-4 rounded-[18px] bg-wine-2 p-5 md:flex">
-              <div className="flex items-center gap-3.5">
+              <Link href={d.featured.path || '#'} className="flex items-center gap-3.5">
                 <Cover book={d.featured} w={76} h={114} label={false} />
-                <div className="flex min-w-0 flex-col gap-1">
+                <span className="flex min-w-0 flex-col gap-1">
                   <span className="text-xs text-pink">Первая глава бесплатно</span>
                   <span className="text-[17px] font-semibold">{d.featured.title}</span>
-                  <span className="text-sm text-blush">
-                    {names(d.featured.authors)}
-                    {names(d.featured.narrators) ? ` · читает ${names(d.featured.narrators)}` : ''}
-                  </span>
-                </div>
-              </div>
-              <Link href={d.featured.path || '#'} className="flex items-center gap-3 text-sm text-blush">
-                <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white">
-                  <PlayIcon size={20} color="#3A1424" />
+                  <span className="text-sm text-blush">{byline}</span>
                 </span>
-                Слушать бесплатно, дальше — по подписке
               </Link>
+              <div className="flex items-center gap-3 text-sm text-blush">
+                {featuredTrack ? <PlayButton track={featuredTrack} size={52} /> : null}
+                {featuredTrack ? 'Слушать бесплатно, дальше — по подписке' : <Link href={d.featured.path || '#'} className="font-semibold text-pink">Открыть книгу →</Link>}
+              </div>
             </aside>
           )}
         </Wrap>
       </section>
 
-      {/* Карточка «первая глава» на мобильном — на месте «Продолжить» из макета */}
       {d.featured && (
         <Wrap className="pt-5 md:hidden">
-          <Link href={d.featured.path || '#'} className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--shadow-card)]">
-            <Cover book={d.featured} w={56} h={84} label={false} />
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="text-xs font-semibold text-rose">Первая глава бесплатно</span>
-              <span className="font-semibold leading-snug">{d.featured.title}</span>
-              <span className="text-xs text-muted">{names(d.featured.authors)}{names(d.featured.narrators) ? ` · читает ${names(d.featured.narrators)}` : ''}</span>
-            </div>
-            <span aria-hidden className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-rose">
-              <PlayIcon color="#FFFFFF" />
-            </span>
-          </Link>
+          <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--shadow-card)]">
+            <Link href={d.featured.path || '#'} className="flex min-w-0 flex-1 items-center gap-3">
+              <Cover book={d.featured} w={56} h={84} label={false} />
+              <span className="flex min-w-0 flex-col gap-1">
+                <span className="text-xs font-semibold text-rose">Первая глава бесплатно</span>
+                <span className="font-semibold leading-snug">{d.featured.title}</span>
+                <span className="text-xs text-muted">{byline}</span>
+              </span>
+            </Link>
+            {featuredTrack && <PlayButton track={featuredTrack} size={48} />}
+          </div>
         </Wrap>
       )}
 
@@ -94,25 +91,50 @@ export default async function Home() {
 
       <section className="pt-7 md:pt-14">
         <Wrap>
-          <SectionHead
-            title="Выберите по сюжету"
-            href="/tropy/"
-            lead="Вы знаете, какую историю хотите, даже если не знаете названия. Каждый сюжет — подборка с аудио, новинками и сериями по порядку."
-          />
+          <SectionHead title="Выберите по сюжету" lead="Вы знаете, какую историю хотите, даже если не знаете названия." />
           <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3.5">
-            {d.tropes.slice(0, 9).map((t) => {
+            {d.tropes.slice(0, 9).map((t, i) => {
               const c = d.counts.get(t.id) || { all: 0, audio: 0 }
+              const tr = trendLabel(t.growth)
               return (
-                <Link key={t.id} href={t.path || '#'} className="flex min-h-24 flex-col gap-1.5 rounded-[14px] border border-line bg-white p-3.5 md:p-[18px]">
+                <Link key={t.id} href={t.path || '#'} className={`${i >= 6 ? 'hidden md:flex' : 'flex'} min-h-24 flex-col gap-1.5 rounded-[14px] border border-line bg-white p-3.5 md:p-[18px]`}>
                   <span className="text-[15px] font-semibold leading-tight text-ink md:text-lg">{t.title}</span>
                   {t.subtitle && <span className="text-xs text-muted md:text-sm">{t.subtitle}</span>}
                   <span className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-xs text-muted">
                     {c.all ? `${c.all} ${plural(c.all, 'книга', 'книги', 'книг')}${c.audio ? ` · ${c.audio} в аудио` : ''}` : 'Скоро книги'}
-                    {trend(t) && <span className="rounded-full bg-blush px-2 py-0.5 font-semibold text-rose">{trend(t)}</span>}
+                    {tr && <span className="rounded-full bg-blush px-2 py-0.5 font-semibold text-rose">{tr}</span>}
                   </span>
                 </Link>
               )
             })}
+          </div>
+          <Link href="/tropy/" className="mt-3.5 flex h-12 items-center justify-center rounded-xl border border-petal bg-white font-semibold text-rose md:inline-flex md:px-6">
+            Все {d.tropeTotal} {plural(d.tropeTotal, 'сюжет', 'сюжета', 'сюжетов')}
+          </Link>
+        </Wrap>
+      </section>
+
+      <section className="pt-7 md:pt-14">
+        <Wrap>
+          <div className="on-dark grid gap-5 rounded-[20px] bg-wine p-5 text-white md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:p-8">
+            <div className="flex flex-col gap-2.5">
+              <span className="text-xs uppercase tracking-[0.12em] text-pink">Только у нас</span>
+              <span className="font-display text-2xl md:text-[32px]">Литмобы</span>
+              <span className="text-sm text-blush md:text-base">Авторы пишут на один сюжет по общим правилам и в общие сроки. Подпишитесь на литмоб — и получайте проду всех участников.</span>
+              <span className="mt-1 flex flex-wrap gap-2.5">
+                <Link href="/litmoby/" className="rounded-xl bg-white px-[18px] py-3 font-semibold text-wine">Все литмобы</Link>
+                <Link href="/litmoby/sozdat/" className="rounded-xl border border-blush px-[18px] py-3 font-semibold text-white">Создать свой</Link>
+              </span>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {d.litmobs.map((l) => (
+                <Link key={l.id} href={l.path || '#'} className="flex flex-col gap-1 rounded-2xl bg-wine-2 p-4">
+                  <span className="text-xs font-semibold text-pink">{l.status === 'recruiting' ? 'Набор авторов' : l.status === 'running' ? 'Идёт' : 'Литмоб'}</span>
+                  <span className="font-display text-xl">{l.title}</span>
+                  {l.pitch && <span className="line-clamp-2 text-sm text-blush">{l.pitch}</span>}
+                </Link>
+              ))}
+            </div>
           </div>
         </Wrap>
       </section>
@@ -122,8 +144,8 @@ export default async function Home() {
           <Wrap>
             <SectionHead title="Подборки, которые ищут" href="/podborki/" />
             <div className="grid gap-2.5 md:grid-cols-3 md:gap-3.5">
-              {d.collections.map((c) => (
-                <Link key={c.id} href={c.path || '#'} className="flex items-center gap-4 rounded-[14px] border border-line bg-white p-4">
+              {d.collections.map((c, i) => (
+                <Link key={c.id} href={c.path || '#'} className={`${i >= 4 ? 'hidden md:flex' : 'flex'} items-center gap-4 rounded-[14px] border border-line bg-white p-4`}>
                   <span className="flex min-w-0 flex-1 flex-col gap-1">
                     <span className="font-semibold">{c.title}</span>
                     {c.subtitle && <span className="text-[13px] text-muted">{c.subtitle}</span>}
@@ -139,55 +161,20 @@ export default async function Home() {
       {d.narrators.length > 0 && (
         <section className="pt-7 md:pt-14">
           <Wrap>
-            <SectionHead title="Голоса, которые любят" href="/chtecy/" lead="Послушайте 30 секунд и подпишитесь на голос, чтобы не пропустить новые озвучки." />
+            <SectionHead title="Голоса, которые любят" href="/chtecy/" lead="Послушайте голос — и выберите книгу в его исполнении." />
             <div className="grid gap-2.5 md:grid-cols-4 md:gap-3.5">
-              {d.narrators.map((n) => (
-                <Link key={n.id} href={n.path || '#'} className="flex items-center gap-3 rounded-[14px] border border-line bg-white p-3">
-                  <span className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-petal font-display text-lg text-cover-ink">{n.name.slice(0, 1)}</span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="font-semibold">{n.name}</span>
-                    {n.voice && <span className="text-xs text-muted">{n.voice}</span>}
-                  </span>
-                  {n.demo ? (
-                    <span aria-hidden className="flex h-11 w-11 flex-none items-center justify-center rounded-full border border-rose bg-white">
-                      <PlayIcon size={16} color="#9C2B4E" />
-                    </span>
-                  ) : (
-                    <span aria-hidden className="text-xl text-rose">→</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </Wrap>
-        </section>
-      )}
-
-      {d.genres.length > 0 && (
-        <section className="pt-7 md:pt-14">
-          <Wrap>
-            <SectionHead title="Жанры" href="/zhanr/" />
-            <div className="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
-              {d.genres.slice(0, 8).map((g) => {
-                const kids = d.genreChildren.get(g.id) || []
-                const audioKid = kids.find((k) => k.audioOnly)
-                const links = [...kids.filter((k) => !k.audioOnly), ...((g.tropes || []).filter((t) => typeof t === 'object') as Trope[])].slice(0, 4) as (Genre | Trope)[]
+              {d.narrators.map((n) => {
+                const demo = n.demo && typeof n.demo === 'object' ? (n.demo as Audio) : null
                 return (
-                  <div key={g.id} className="flex flex-col gap-2">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <Link href={g.path || '#'} className="text-[17px] font-bold">
-                        {g.title}
-                      </Link>
-                      {audioKid && (
-                        <Link href={audioKid.path || '#'} className="rounded-full bg-blush px-2 py-0.5 text-xs font-semibold text-rose">
-                          аудио
-                        </Link>
-                      )}
-                    </span>
-                    {links.map((l) => (
-                      <Link key={`${l.id}-${l.path}`} href={l.path || '#'} className="text-[15px] text-muted">
-                        {l.title}
-                      </Link>
-                    ))}
+                  <div key={n.id} className="flex items-center gap-3 rounded-[14px] border border-line bg-white p-3">
+                    <Link href={n.path || '#'} className="flex min-w-0 flex-1 items-center gap-3">
+                      <span className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-petal font-display text-lg text-cover-ink">{n.name.slice(0, 1)}</span>
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="font-semibold">{n.name}</span>
+                        {n.voice && <span className="text-xs text-muted">{n.voice}</span>}
+                      </span>
+                    </Link>
+                    {demo?.url && <PlayButton track={{ src: demo.url, title: `Голос: ${n.name}`, subtitle: 'демо', href: n.path || '#', key: `voice-${n.id}` }} size={44} light label={`Послушать голос: ${n.name}`} />}
                   </div>
                 )
               })}
@@ -196,41 +183,22 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="pt-7 md:pt-14">
-        <Wrap className="grid gap-3.5 md:grid-cols-2">
-          <div className="on-dark flex flex-col gap-2.5 rounded-2xl bg-wine p-[18px] text-white md:p-7">
-            <span className="font-display text-xl md:text-2xl">Литмобы</span>
-            <span className="text-sm text-blush">Авторы пишут на один сюжет по общим правилам. Подпишитесь — и получайте проду всех участников.</span>
-            {d.litmobs.map((l) => (
-              <Link key={l.id} href={l.path || '#'} className="text-sm font-semibold text-pink">
-                «{l.title}» →
-              </Link>
-            ))}
-            <Link href="/litmoby/" className="self-start rounded-xl bg-white px-[18px] py-3 font-semibold text-wine">
-              Все литмобы
-            </Link>
-          </div>
-          <div className="flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-[18px] md:p-7">
-            <span className="font-display text-xl md:text-2xl">Ваша полка</span>
-            <span className="text-sm text-muted">Отмечайте прослушанное и получайте новые главы любимых серий.</span>
-            <Link href="/vhod/" className="self-start rounded-xl bg-rose px-[18px] py-3 font-semibold text-white">
-              Создать полку
-            </Link>
-          </div>
-        </Wrap>
-      </section>
-
       <section className="pb-10 pt-7 md:pb-16 md:pt-14">
-        <Wrap className="grid gap-3.5 md:grid-cols-2">
-          <Link href="/chtecam/" className="flex flex-col gap-2.5 rounded-[18px] bg-blush/50 p-6">
-            <span className="text-lg font-bold">Вы чтец?</span>
-            <span className="text-ink-2">Озвучивайте книги, которые вам нравятся, договаривайтесь с авторами прямо на площадке и зарабатывайте на прослушиваниях.</span>
-            <span className="font-semibold text-rose">Стать чтецом →</span>
+        <Wrap className="grid gap-3 md:grid-cols-3">
+          <Link href="/polka/" className="flex flex-col gap-1.5 rounded-[18px] border border-line bg-white p-5">
+            <span className="font-display text-xl">Ваша полка</span>
+            <span className="text-sm text-muted">Место, где остановились, и новые главы любимых серий.</span>
+            <span className="mt-1 font-semibold text-rose">Открыть полку →</span>
           </Link>
-          <Link href="/ozvuchka-knig/" className="flex flex-col gap-2.5 rounded-[18px] bg-blush/50 p-6">
-            <span className="text-lg font-bold">Вы автор?</span>
-            <span className="text-ink-2">Добавьте книгу в каталог со ссылкой на вашу страницу, а чтецы сами предложат озвучку. Или соберите свой литмоб.</span>
-            <span className="font-semibold text-rose">Добавить книгу →</span>
+          <Link href="/chtecam/" className="flex flex-col gap-1.5 rounded-[18px] bg-blush/50 p-5">
+            <span className="font-display text-xl">Вы чтец?</span>
+            <span className="text-sm text-ink-2">Озвучивайте книги и зарабатывайте на прослушиваниях.</span>
+            <span className="mt-1 font-semibold text-rose">Стать чтецом →</span>
+          </Link>
+          <Link href="/ozvuchka-knig/" className="flex flex-col gap-1.5 rounded-[18px] bg-blush/50 p-5">
+            <span className="font-display text-xl">Вы автор?</span>
+            <span className="text-sm text-ink-2">Добавьте книгу — чтецы сами предложат озвучку.</span>
+            <span className="mt-1 font-semibold text-rose">Добавить книгу →</span>
           </Link>
         </Wrap>
       </section>

@@ -6,13 +6,16 @@ import type { Audio, Author, Book, Narrator, Series, Trope } from '@/payload-typ
 import { BookTile } from '@/components/BookCard'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Cover } from '@/components/Cover'
-import { BookmarkIcon, PlayIcon } from '@/components/Icons'
+import { FollowButton, ShelfButton } from '@/components/ActionButtons'
+import { PlayIcon } from '@/components/Icons'
+import { ChapterPlayer, type Track } from '@/components/Player'
 import { JsonLd } from '@/components/JsonLd'
 import { Wrap } from '@/components/Wrap'
 import { getBookBySlug, getBooksFor, getBooksWhere, getChaptersOf } from '@/lib/data'
 import { plural } from '@/lib/home'
 import { SITE_URL } from '@/lib/payload'
 import { buildMetadata } from '@/lib/seo'
+import { getViewer, getViewerState } from '@/lib/session'
 
 type Props = { params: Promise<{ slug: string }> }
 const objs = <T,>(v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === 'object') : []) as T[]
@@ -53,6 +56,45 @@ export default async function BookPage({ params }: Props) {
   const crumbs = [...(tropes[0]?.path ? [{ label: tropes[0].title, href: tropes[0].path }] : []), { label: book.title, href: book.path || `/kniga/${book.slug}/` }]
   const shown = chapters.slice(0, 3)
   const rest = chapters.slice(3)
+  const viewer = await getViewer()
+  const state = await getViewerState(viewer?.id, { book: book.id })
+  const returnTo = book.path || `/kniga/${book.slug}/`
+  const track: Track | null = firstAudio?.url
+    ? { src: firstAudio.url, title: book.title, subtitle: first?.title || 'Глава 1', href: returnTo, key: `ch-${first!.id}`, onProgressUrl: state.shelf ? `/api/shelf/${state.shelf.id}/` : undefined }
+    : null
+  const listenCard = (dark: boolean) => (
+    <section id="listen" className={`flex scroll-mt-20 flex-col gap-3 rounded-2xl p-3.5 md:p-5 ${dark ? 'bg-wine-2 text-white' : 'bg-white shadow-[var(--shadow-card)]'}`}>
+      <span className="font-semibold">Глава 1 · бесплатно</span>
+      {track ? (
+        <ChapterPlayer track={track} dark={dark} />
+      ) : (
+        <div className="flex items-center gap-3">
+          <span className={`flex h-14 w-14 flex-none items-center justify-center rounded-full ${dark ? 'bg-white/15' : 'bg-rose/40'}`}><PlayIcon size={20} color="#FFFFFF" /></span>
+          <span className={`text-sm ${dark ? 'text-blush' : 'text-muted'}`}>
+            {book.status === 'ongoing' ? 'Озвучка готовится. Подпишитесь — сообщим о первой главе.' : 'Озвучки пока нет. Добавьте книгу на полку — сообщим, когда появится.'}
+          </span>
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <FollowButton
+          target="book"
+          id={book.id}
+          followId={state.follow}
+          loggedIn={Boolean(viewer)}
+          returnTo={returnTo}
+          label={book.status === 'ongoing' ? 'Сообщить о проде' : 'Сообщить о новой озвучке'}
+          doneLabel="Сообщим"
+          className={`rounded-xl px-4 py-2.5 text-sm font-semibold ${dark ? 'bg-white text-wine' : 'bg-rose text-white'}`}
+        />
+        <ShelfButton book={book.id} shelfId={state.shelf?.id ?? null} loggedIn={Boolean(viewer)} returnTo={returnTo} withLabel className={`flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold ${dark ? 'border-white/30 bg-transparent text-white' : 'border-petal bg-white text-rose'}`} />
+      </div>
+      {ext && (
+        <a href={ext.url} target="_blank" rel="nofollow noopener" className={`text-sm font-semibold ${dark ? 'text-pink' : 'text-rose'}`}>
+          Читать текст у автора на {ext.label} ↗
+        </a>
+      )}
+    </section>
+  )
   const chapterState = (i: number, c: (typeof chapters)[number]) => (c.isFree || i < free ? { t: 'Бесплатно', cls: 'text-free' } : { t: 'По подписке', cls: 'text-muted' })
 
   return (
@@ -60,6 +102,7 @@ export default async function BookPage({ params }: Props) {
       <header className="on-dark bg-wine text-white">
         <Wrap className="flex flex-col gap-4 pb-[22px] pt-3.5 md:pb-10 md:pt-6">
           <Breadcrumbs items={crumbs} light />
+          <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_380px] md:gap-10">
           <div className="flex items-start gap-3.5 md:gap-8">
             <div className="md:hidden"><Cover book={book} w={128} h={192} shadow /></div>
             <div className="hidden md:block"><Cover book={book} w={200} h={300} shadow /></div>
@@ -86,6 +129,8 @@ export default async function BookPage({ params }: Props) {
               {book.hook && <span className="mt-1 hidden max-w-xl text-blush md:block">{book.hook}</span>}
             </div>
           </div>
+          <div className="hidden md:block">{listenCard(true)}</div>
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {tropes.map((t) => (
               <Link key={t.id} href={t.path || '#'} className="rounded-full bg-wine-2 px-[11px] py-1.5 text-[13px] text-white">{t.title}</Link>
@@ -94,26 +139,8 @@ export default async function BookPage({ params }: Props) {
         </Wrap>
       </header>
 
-      <Wrap className="flex flex-col gap-6 md:max-w-[880px]">
-        <section id="listen" className="-mt-2 flex scroll-mt-20 flex-col gap-3 rounded-2xl bg-white p-3.5 shadow-[var(--shadow-card)] md:mt-6">
-          <span className="font-semibold">Глава 1 · бесплатно</span>
-          {firstAudio?.url ? (
-            <audio controls preload="none" src={firstAudio.url} className="w-full" />
-          ) : (
-            <div className="flex items-center gap-3">
-              <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-rose/50"><PlayIcon size={20} color="#FFFFFF" /></span>
-              <div className="flex flex-1 flex-col gap-1.5">
-                <div className="h-1 rounded bg-track" />
-                <span className="text-xs text-muted">{book.hasAudio ? 'Скоро здесь появится плеер с первой главой' : 'Озвучки пока нет — добавьте книгу на полку, сообщим, когда появится'}</span>
-              </div>
-            </div>
-          )}
-          {ext && (
-            <a href={ext.url} target="_blank" rel="nofollow noopener" className="text-sm font-semibold text-rose">
-              Читать текст у автора на {ext.label} ↗
-            </a>
-          )}
-        </section>
+      <Wrap className="flex flex-col gap-6 md:max-w-[880px] md:pt-10">
+        <div className="-mt-2 md:hidden">{listenCard(false)}</div>
 
         {chapters.length > 0 && (
           <section className="flex flex-col gap-2.5">
@@ -176,7 +203,7 @@ export default async function BookPage({ params }: Props) {
                   <span className="font-semibold">{n.name}</span>
                   {n.voice && <span className="text-xs text-muted">{n.voice}</span>}
                 </Link>
-                <Link href={`/vhod/?follow=narrator:${n.id}`} className="flex h-11 items-center rounded-full border border-rose px-3.5 text-[13px] font-semibold text-rose">Подписаться</Link>
+                <FollowButton target="narrator" id={n.id} followId={null} loggedIn={Boolean(viewer)} returnTo={returnTo} label="Подписаться" doneLabel="Подписаны" className="flex h-11 items-center rounded-full border border-rose px-3.5 text-[13px] font-semibold text-rose" />
               </div>
             ))}
           </section>
@@ -220,16 +247,10 @@ export default async function BookPage({ params }: Props) {
       )}
 
       <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-line bg-white px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
-        {/* Главное действие: слушать, если есть аудио; ждать проду, если книга пишется; иначе — на полку. */}
-        <Link
-          href={firstAudio?.url ? '#listen' : book.status === 'ongoing' ? `/vhod/?follow=book:${book.id}` : `/vhod/?shelf=${book.id}`}
-          className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white"
-        >
-          {firstAudio?.url ? 'Слушать бесплатно' : book.status === 'ongoing' ? 'Сообщить о проде' : 'Хочу послушать'}
-        </Link>
-        <Link href={`/vhod/?shelf=${book.id}`} aria-label="Добавить на полку" className="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-petal bg-white">
-          <BookmarkIcon color="#9C2B4E" />
-        </Link>
+        <a href="#listen" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white">
+          {track ? 'Слушать бесплатно' : book.status === 'ongoing' ? 'Сообщить о проде' : 'Хочу послушать'}
+        </a>
+        <ShelfButton book={book.id} shelfId={state.shelf?.id ?? null} loggedIn={Boolean(viewer)} returnTo={returnTo} className="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-petal bg-white" />
       </div>
 
       <JsonLd

@@ -15,6 +15,7 @@ import { Chapters } from './collections/Chapters'
 import { Collections } from './collections/Collections'
 import { Pages } from './collections/Pages'
 import { Follows } from './collections/Follows'
+import { Shelf } from './collections/Shelf'
 import { Genres } from './collections/Genres'
 import { LitmobEntries, Litmobs } from './collections/Litmobs'
 import { Media } from './collections/Media'
@@ -35,13 +36,16 @@ const useS3 = Boolean(process.env.S3_BUCKET)
 
 export default buildConfig({
   serverURL: SITE_URL,
+  // Вход читателей идёт через REST Payload с cookie; разрешаем запросы со своего домена.
+  csrf: [SITE_URL],
+  cors: [SITE_URL],
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' · Литмоб' },
   },
   i18n: { supportedLanguages: { ru }, fallbackLanguage: 'ru' },
-  collections: [Tropes, Genres, Collections, Books, Chapters, Series, Authors, Narrators, Litmobs, LitmobEntries, Follows, Users, Pages, Media, Audio],
+  collections: [Tropes, Genres, Collections, Books, Chapters, Series, Authors, Narrators, Litmobs, LitmobEntries, Follows, Shelf, Users, Pages, Media, Audio],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   email: process.env.SMTP_HOST

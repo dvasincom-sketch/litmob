@@ -78,6 +78,7 @@ export interface Config {
     litmobs: Litmob;
     'litmob-entries': LitmobEntry;
     follows: Follow;
+    shelf: Shelf;
     users: User;
     pages: Page;
     media: Media;
@@ -119,6 +120,7 @@ export interface Config {
     litmobs: LitmobsSelect<false> | LitmobsSelect<true>;
     'litmob-entries': LitmobEntriesSelect<false> | LitmobEntriesSelect<true>;
     follows: FollowsSelect<false> | FollowsSelect<true>;
+    shelf: ShelfSelect<false> | ShelfSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -857,7 +859,23 @@ export interface Follow {
   user: number | User;
   book?: (number | null) | Book;
   litmob?: (number | null) | Litmob;
+  narrator?: (number | null) | Narrator;
+  trope?: (number | null) | Trope;
   channel?: ('email' | 'push') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shelf".
+ */
+export interface Shelf {
+  id: number;
+  user: number | User;
+  book: number | Book;
+  status?: ('want' | 'listening' | 'done') | null;
+  chapter?: (number | null) | Chapter;
+  positionSec?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -997,6 +1015,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'follows';
         value: number | Follow;
+      } | null)
+    | ({
+        relationTo: 'shelf';
+        value: number | Shelf;
       } | null)
     | ({
         relationTo: 'users';
@@ -1413,7 +1435,22 @@ export interface FollowsSelect<T extends boolean = true> {
   user?: T;
   book?: T;
   litmob?: T;
+  narrator?: T;
+  trope?: T;
   channel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shelf_select".
+ */
+export interface ShelfSelect<T extends boolean = true> {
+  user?: T;
+  book?: T;
+  status?: T;
+  chapter?: T;
+  positionSec?: T;
   updatedAt?: T;
   createdAt?: T;
 }

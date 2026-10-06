@@ -13,7 +13,7 @@ export function BottomNav() {
     { href: '/', label: 'Главная', active: path === '/' },
     { href: '/poisk/', label: 'Поиск', active: path.startsWith('/poisk') },
     { href: '/tropy/', label: 'Сюжеты', active: path.startsWith('/tropy') },
-    { href: '/vhod/', label: 'Полка', active: path.startsWith('/vhod') },
+    { href: '/polka/', label: 'Полка', active: path.startsWith('/polka') || path.startsWith('/vhod') },
   ]
   return (
     <nav aria-label="Основное меню" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-white pb-[max(10px,env(safe-area-inset-bottom))] pt-1.5 text-center text-[11px] md:hidden">

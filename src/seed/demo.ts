@@ -11,7 +11,30 @@ import config from '../payload.config'
 const payload = await getPayload({ config })
 const o = { overrideAccess: true, depth: 0 } as const
 
+/** Короткий синтезированный звук (мягкие аккорды) — чтобы проверить плеер без настоящих записей. */
+function demoWav(notes: number[], seconds = 24) {
+  const rate = 22050
+  const n = rate * seconds
+  const buf = Buffer.alloc(44 + n * 2)
+  buf.write('RIFF', 0); buf.writeUInt32LE(36 + n * 2, 4); buf.write('WAVE', 8); buf.write('fmt ', 12)
+  buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(1, 22); buf.writeUInt32LE(rate, 24)
+  buf.writeUInt32LE(rate * 2, 28); buf.writeUInt16LE(2, 32); buf.writeUInt16LE(16, 34); buf.write('data', 36); buf.writeUInt32LE(n * 2, 40)
+  const beat = rate * 1.5
+  for (let i = 0; i < n; i++) {
+    const t = i / rate
+    const k = Math.floor(i / beat) % notes.length
+    const local = (i % beat) / beat
+    const env = Math.min(1, local * 8) * Math.exp(-local * 2.2)
+    const f = notes[k]
+    const v = (Math.sin(2 * Math.PI * f * t) + 0.4 * Math.sin(2 * Math.PI * f * 2 * t) + 0.3 * Math.sin(2 * Math.PI * f * 1.5 * t)) * env
+    const fade = Math.min(1, i / rate, (n - i) / rate)
+    buf.writeInt16LE(Math.round(v * 0.25 * fade * 32767), 44 + i * 2)
+  }
+  return buf
+}
+
 async function removeAll() {
+  await payload.delete({ collection: 'audio', where: { title: { like: 'Демо' } }, ...o })
   for (const collection of ['chapters', 'books', 'series', 'authors', 'narrators'] as const) {
     if (collection === 'chapters') {
       const books = await payload.find({ collection: 'books', where: { isDemo: { equals: true } }, limit: 0, ...o })
@@ -42,6 +65,13 @@ const trope = async (slug: string, parentSlug?: string) => {
   return r.docs[0]?.id
 }
 
+const upload = async (title: string, name: string, notes: number[]) => {
+  const data = demoWav(notes)
+  return payload.create({ collection: 'audio', data: { title, durationSec: 24 }, file: { data, mimetype: 'audio/wav', name, size: data.length }, ...o })
+}
+const chapterAudio = await upload('Демо: глава 1', 'demo-glava-1.wav', [261.6, 329.6, 392, 329.6, 293.7, 349.2, 440, 349.2])
+const voiceAudio = await upload('Демо: голос чтеца', 'demo-golos.wav', [220, 277.2, 329.6, 440])
+
 const narrators = []
 for (const [name, voice] of [
   ['Алина Ветрова', 'Ромфант, тёплый низкий голос'],
@@ -49,7 +79,7 @@ for (const [name, voice] of [
   ['Ева Ланская', 'Бытовое фэнтези, с юмором'],
   ['Дина Орлова', 'Драма и измена, мягко'],
 ] as const)
-  narrators.push(await payload.create({ collection: 'narrators', data: { name, voice, about: 'Демо-чтец для проверки дизайна.', isDemo: true, published: true }, ...o }))
+  narrators.push(await payload.create({ collection: 'narrators', data: { name, voice, about: 'Демо-чтец для проверки дизайна.', demo: voiceAudio.id, isDemo: true, published: true }, ...o }))
 
 const authors = []
 for (const name of ['Мира Светлова', 'Ольга Зимина', 'Яна Корф', 'Лея Даль', 'Кира Морозова', 'Илья Гранин'])
@@ -100,7 +130,7 @@ for (const b of BOOKS) {
     ...o,
   })
   for (let c = 1; c <= 5; c++)
-    await payload.create({ collection: 'chapters', data: { book: book.id, order: c, title: `Глава ${c}`, isFree: c === 1, published: true }, ...o })
+    await payload.create({ collection: 'chapters', data: { book: book.id, order: c, title: `Глава ${c}`, isFree: c === 1, audio: c === 1 && b.audio ? chapterAudio.id : undefined, published: true }, ...o })
   i++
 }
 console.log(`Демо: книг ${BOOKS.length}, авторов ${authors.length}, чтецов ${narrators.length}, серия 1.`)

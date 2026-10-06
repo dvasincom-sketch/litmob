@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import React from 'react'
+import { PlayerProvider } from '@/components/Player'
 import { BottomNav, SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { SITE_URL } from '@/lib/payload'
 import './globals.css'
@@ -20,10 +21,12 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
   return (
     <html lang="ru">
       <body className="min-h-screen bg-cream pb-16 md:pb-0">
-        <SiteHeader />
-        <main>{children}</main>
-        <SiteFooter />
-        <BottomNav />
+        <PlayerProvider>
+          <SiteHeader />
+          <main>{children}</main>
+          <SiteFooter />
+          <BottomNav />
+        </PlayerProvider>
       </body>
     </html>
   )

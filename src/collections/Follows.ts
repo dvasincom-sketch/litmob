@@ -3,7 +3,7 @@ import { loggedIn, ownOrStaff } from '../access'
 
 /**
  * «Сообщим о проде» — главный лидмагнит (каждый пятый комментарий у книг —
- * «когда прода»). Подписка на книгу или на литмоб целиком.
+ * «когда прода»). Подписка на книгу, литмоб целиком, голос чтеца или сюжет.
  * Уникальность пары (user, target) держит индекс в миграции.
  */
 export const Follows: CollectionConfig = {
@@ -23,6 +23,8 @@ export const Follows: CollectionConfig = {
     { name: 'user', type: 'relationship', relationTo: 'users', required: true, index: true, label: 'Читатель' },
     { name: 'book', type: 'relationship', relationTo: 'books', index: true, label: 'Книга' },
     { name: 'litmob', type: 'relationship', relationTo: 'litmobs', index: true, label: 'Литмоб' },
+    { name: 'narrator', type: 'relationship', relationTo: 'narrators', index: true, label: 'Чтец' },
+    { name: 'trope', type: 'relationship', relationTo: 'tropes', index: true, label: 'Сюжет' },
     {
       name: 'channel',
       type: 'select',

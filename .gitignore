@@ -10,3 +10,7 @@ dist
 .DS_Store
 .pgdata/
 .fuse_hidden*
+
+# Локальные загрузки без S3
+/media/
+/audio/
