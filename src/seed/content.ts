@@ -21,7 +21,8 @@
  */
 import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
-import config from '@payload-config'
+import 'dotenv/config'
+import config from '../payload.config'
 import { getPayload } from 'payload'
 import { convertMarkdownToLexical, editorConfigFactory } from '@payloadcms/richtext-lexical'
 
