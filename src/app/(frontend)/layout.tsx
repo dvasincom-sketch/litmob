@@ -3,6 +3,7 @@ import React from 'react'
 import { PlayerProvider } from '@/components/Player'
 import { BottomNav, SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { SITE_URL } from '@/lib/payload'
+import { YandexMetrika } from '@/components/YandexMetrika'
 import './globals.css'
 
 export const dynamic = 'force-dynamic'
@@ -35,6 +36,7 @@ export default function FrontendLayout({ children }: { children: React.ReactNode
           <SiteFooter />
           <BottomNav />
         </PlayerProvider>
+        <YandexMetrika />
       </body>
     </html>
   )
