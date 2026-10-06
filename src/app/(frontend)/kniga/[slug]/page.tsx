@@ -102,7 +102,7 @@ export default async function BookPage({ params }: Props) {
       <header className="on-dark bg-wine text-white">
         <Wrap className="flex flex-col gap-4 pb-[22px] pt-3.5 md:pb-10 md:pt-6">
           <Breadcrumbs items={crumbs} light />
-          <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_380px] md:gap-10">
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] md:gap-10">
           <div className="flex items-start gap-3.5 md:gap-8">
             <div className="md:hidden"><Cover book={book} w={128} h={192} shadow /></div>
             <div className="hidden md:block"><Cover book={book} w={200} h={300} shadow /></div>
@@ -129,7 +129,7 @@ export default async function BookPage({ params }: Props) {
               {book.hook && <span className="mt-1 hidden max-w-xl text-blush md:block">{book.hook}</span>}
             </div>
           </div>
-          <div className="hidden md:block">{listenCard(true)}</div>
+          <div className="hidden lg:block">{listenCard(true)}</div>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {tropes.map((t) => (
@@ -140,7 +140,7 @@ export default async function BookPage({ params }: Props) {
       </header>
 
       <Wrap className="flex flex-col gap-6 md:max-w-[880px] md:pt-10">
-        <div className="-mt-2 md:hidden">{listenCard(false)}</div>
+        <div className="-mt-2 lg:hidden">{listenCard(false)}</div>
 
         {chapters.length > 0 && (
           <section className="flex flex-col gap-2.5">

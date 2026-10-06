@@ -23,7 +23,7 @@ export default async function Home() {
   return (
     <>
       <section className="on-dark bg-wine text-white">
-        <Wrap className="grid gap-8 pb-7 pt-5 md:grid-cols-[minmax(0,1fr)_360px] md:items-end md:pb-14 md:pt-12">
+        <Wrap className="grid gap-8 pb-7 pt-5 lg:grid-cols-[minmax(0,1fr)_360px] md:items-end md:pb-14 md:pt-12">
           <div className="flex min-w-0 flex-col gap-[18px]">
             <p className="hidden text-[13px] uppercase tracking-[0.12em] text-pink md:block">Ромфант, попаданки, бытовое фэнтези</p>
             <h1 className="text-[30px] md:text-[clamp(34px,4.2vw,54px)]">Истории о любви и драконах, которые хочется слушать</h1>
@@ -42,7 +42,7 @@ export default async function Home() {
             </div>
           </div>
           {d.featured && (
-            <aside aria-label="Первая глава бесплатно" className="hidden flex-col gap-4 rounded-[18px] bg-wine-2 p-5 md:flex">
+            <aside aria-label="Первая глава бесплатно" className="hidden flex-col gap-4 rounded-[18px] bg-wine-2 p-5 lg:flex">
               <Link href={d.featured.path || '#'} className="flex items-center gap-3.5">
                 <Cover book={d.featured} w={76} h={114} label={false} />
                 <span className="flex min-w-0 flex-col gap-1">
@@ -61,7 +61,7 @@ export default async function Home() {
       </section>
 
       {d.featured && (
-        <Wrap className="pt-5 md:hidden">
+        <Wrap className="pt-5 lg:hidden">
           <div className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--shadow-card)]">
             <Link href={d.featured.path || '#'} className="flex min-w-0 flex-1 items-center gap-3">
               <Cover book={d.featured} w={56} h={84} label={false} />
