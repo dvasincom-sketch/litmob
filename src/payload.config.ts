@@ -66,7 +66,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
       keepAlive: true,
-      max: 10,
+      // Маленькие managed-базы Timeweb дают ~20 подключений; при деплое старый и новый
+      // контейнеры работают одновременно, поэтому пул держим небольшим.
+      max: Number(process.env.DB_POOL_MAX || 5),
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000,
     },
