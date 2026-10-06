@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.*
+!.env.example
+build
+dist
+*.log
+*.tsbuildinfo
+.DS_Store
+.pgdata/
+.fuse_hidden*
