@@ -16,9 +16,8 @@ RUN npm run build
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 CMD curl -fsS "http://127.0.0.1:${PORT}/api/health/" || exit 1
-# SEED_ON_START=1 — один раз на первом деплое: создаёт сюжеты, жанры, подборки,
-# страницы и админа (SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD). Потом переменную убрать:
-# сид перезаписывает поля сюжетов и страниц значениями из src/seed/structure.ts.
-# CONTENT_ON_START=1 — заливает тексты из content/ в пустые поля (правки из админки не трогает),
-# можно держать включённым постоянно.
-CMD ["sh", "-c", "npm run migrate && if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content; fi && npm run start"]
+# SEED_ON_START=1 — структура сайта (сюжеты, жанры, подборки, страницы): создаёт новое,
+#   у существующих обновляет только связи и спрос, тексты из админки не трогает. Можно держать включённым.
+# CONTENT_ON_START=1 — тексты из content/ в пустые поля и справочный каталог авторов, серий и книг
+#   (content/catalog/). Повторный запуск ничего не дублирует. Можно держать включённым.
+CMD ["sh", "-c", "npm run migrate && if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi && npm run start"]

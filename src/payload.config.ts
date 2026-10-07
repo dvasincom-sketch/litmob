@@ -16,6 +16,7 @@ import { Collections } from './collections/Collections'
 import { Pages } from './collections/Pages'
 import { Follows } from './collections/Follows'
 import { Shelf } from './collections/Shelf'
+import { Reviews } from './collections/Reviews'
 import { Genres } from './collections/Genres'
 import { LitmobEntries, Litmobs } from './collections/Litmobs'
 import { Media } from './collections/Media'
@@ -45,7 +46,7 @@ export default buildConfig({
     meta: { titleSuffix: ' · Литмоб' },
   },
   i18n: { supportedLanguages: { ru }, fallbackLanguage: 'ru' },
-  collections: [Tropes, Genres, Collections, Books, Chapters, Series, Authors, Narrators, Litmobs, LitmobEntries, Follows, Shelf, Users, Pages, Media, Audio],
+  collections: [Tropes, Genres, Collections, Books, Chapters, Series, Authors, Narrators, Litmobs, LitmobEntries, Follows, Shelf, Reviews, Users, Pages, Media, Audio],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   email: process.env.SMTP_HOST

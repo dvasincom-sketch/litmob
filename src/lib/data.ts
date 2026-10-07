@@ -135,7 +135,7 @@ export const getBooksWhere = cache(async (key: string, id: Id, sort = '-publishe
     collection: 'books',
     where: { and: [{ published: { equals: true } }, { [key]: { in: [id] } }] },
     depth: 1,
-    limit: 100,
+    limit: 400,
     sort,
   })
   return res.docs as Book[]
@@ -203,3 +203,57 @@ export const getBookCounts = cache(async (field: 'tropes' | 'genres'): Promise<B
   }
   return out
 })
+
+/**
+ * Похожие книги: общие сюжеты (вес 3), общие жанры (вес 1), тот же цикл не считаем.
+ * Берём только книги с нашим описанием или аудио — справочные карточки без текста не советуем.
+ */
+export const getSimilarBooks = cache(async (book: Book, limit = 12) => {
+  const payload = await getPayloadClient()
+  const tropeIds = (book.tropes || []).map(idOf).filter((x): x is Id => x != null)
+  const genreIds = (book.genres || []).map(idOf).filter((x): x is Id => x != null)
+  if (!tropeIds.length && !genreIds.length) return [] as Book[]
+  const or: Where[] = []
+  if (tropeIds.length) or.push({ tropes: { in: tropeIds } })
+  if (genreIds.length) or.push({ genres: { in: genreIds } })
+  const res = await payload.find({
+    collection: 'books',
+    where: { and: [{ published: { equals: true } }, { id: { not_equals: book.id } }, { or }, { or: [{ hasAudio: { equals: true } }, { hook: { exists: true } }] }] },
+    depth: 1,
+    limit: 200,
+  })
+  const seriesId = idOf(book.series?.ref)
+  const score = (b: Book) => {
+    const t = (b.tropes || []).map(idOf).filter((x) => x != null && tropeIds.includes(x)).length
+    const g = (b.genres || []).map(idOf).filter((x) => x != null && genreIds.includes(x)).length
+    return t * 3 + g + (b.hasAudio ? 0.5 : 0)
+  }
+  return (res.docs as Book[])
+    .filter((b) => !seriesId || idOf(b.series?.ref) !== seriesId)
+    .sort((a, b) => score(b) - score(a))
+    .slice(0, limit)
+})
+
+/** Одобренные отзывы о книге и средняя оценка. */
+export const getReviews = cache(async (bookId: Id) => {
+  const payload = await getPayloadClient()
+  const res = await payload.find({
+    collection: 'reviews',
+    where: { and: [{ book: { equals: bookId } }, { status: { equals: 'approved' } }] },
+    sort: '-createdAt',
+    limit: 50,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const docs = res.docs as { id: number; authorName?: string | null; rating: number; text: string; createdAt: string }[]
+  const avg = docs.length ? Math.round((docs.reduce((s, r) => s + Number(r.rating), 0) / docs.length) * 10) / 10 : 0
+  return { docs, avg, count: res.totalDocs }
+})
+
+/** Есть ли у читателя отзыв на книгу (любой статус). */
+export async function hasReviewed(userId: Id | undefined, bookId: Id) {
+  if (!userId) return false
+  const payload = await getPayloadClient()
+  const r = await payload.count({ collection: 'reviews', where: { and: [{ book: { equals: bookId } }, { user: { equals: userId } }] }, overrideAccess: true })
+  return r.totalDocs > 0
+}

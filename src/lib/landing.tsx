@@ -17,7 +17,9 @@ const ids = (v: unknown) => (Array.isArray(v) ? v.map((x) => (typeof x === 'obje
 
 async function findBooks(where: Where[], audioOnly: boolean, limit = 30) {
   const payload = await getPayloadClient()
-  const base: Where = { and: [pub, ...where] }
+  // Справочные карточки каталога (без нашего описания и аудио) в подборки не попадают.
+  const quality: Where = { or: [{ hasAudio: { equals: true } }, { hook: { exists: true } }] }
+  const base: Where = { and: [pub, quality, ...where] }
   const [list, audio] = await Promise.all([
     payload.find({ collection: 'books', where: audioOnly ? { and: [base, { hasAudio: { equals: true } }] } : base, depth: 1, limit, sort: '-publishedAt' }),
     payload.count({ collection: 'books', where: { and: [base, { hasAudio: { equals: true } }] } }),

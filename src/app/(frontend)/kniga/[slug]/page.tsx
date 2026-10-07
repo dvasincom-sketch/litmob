@@ -11,10 +11,11 @@ import { PlayIcon } from '@/components/Icons'
 import { ChapterPlayer, type Track } from '@/components/Player'
 import { JsonLd } from '@/components/JsonLd'
 import { Wrap } from '@/components/Wrap'
-import { getBookBySlug, getBooksFor, getBooksWhere, getChaptersOf } from '@/lib/data'
+import { getBookBySlug, getBooksWhere, getChaptersOf, getReviews, getSimilarBooks, hasReviewed } from '@/lib/data'
+import { ReviewForm } from '@/components/Reviews'
 import { plural } from '@/lib/home'
 import { SITE_URL } from '@/lib/payload'
-import { brand, buildMetadata, sentences } from '@/lib/seo'
+import { bookIndexable, buildMetadata, fitTitle, sentences } from '@/lib/seo'
 import { getViewer, getViewerState } from '@/lib/session'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -29,8 +30,12 @@ function titleFor(b: Book) {
   const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
   const tr = b.isTranslation && b.originalTitle ? ` (${b.originalTitle} на русском)` : ''
   const action = b.hasAudio ? 'слушать аудиокнигу' : b.status === 'completed' ? 'читать полностью' : 'читать книгу'
-  const full = `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''}`
-  return brand(full.length > 70 && narr ? `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}` : full)
+  return fitTitle(
+    `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''}`,
+    `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}`,
+    `${b.title} — ${action}`,
+    b.title,
+  )
 }
 
 function descriptionFor(b: Book, chapters: number) {
@@ -61,6 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     kicker: book.hasAudio ? 'Аудиокнига' : 'Книга',
     image: cover || null,
     type: 'book',
+    indexable: bookIndexable(book),
   })
 }
 
@@ -79,8 +85,9 @@ export default async function BookPage({ params }: Props) {
   const narrators = objs<Narrator>(book.narrators)
   const series = book.series?.ref && typeof book.series.ref === 'object' ? (book.series.ref as Series) : null
   const seriesBooks = series ? await getBooksWhere('series.ref', series.id, 'series.order') : []
-  const similar = (await getBooksFor('tropes', tropes.map((t) => t.id), false, 9)).docs.filter((b) => b.id !== book.id).slice(0, 8)
-  const ext = book.externalLinks?.[0]
+  const similar = (await getSimilarBooks(book, 8)) as Book[]
+  // Нет ссылки на саму книгу — ведём на страницу автора на его площадке.
+  const ext = book.externalLinks?.[0] || authors.flatMap((a) => a.links || [])[0]
   const labels = [book.happyEnding === 'yes' ? 'ХЭ' : null, HEAT[book.heat || 'none'], STATUS[book.status || 'ongoing']].filter(Boolean) as string[]
   const crumbs = [...(tropes[0]?.path ? [{ label: tropes[0].title, href: tropes[0].path }] : []), { label: book.title, href: book.path || `/kniga/${book.slug}/` }]
   const shown = chapters.slice(0, 3)
@@ -88,6 +95,7 @@ export default async function BookPage({ params }: Props) {
   const viewer = await getViewer()
   const state = await getViewerState(viewer?.id, { book: book.id })
   const returnTo = book.path || `/kniga/${book.slug}/`
+  const [reviews, reviewed] = await Promise.all([getReviews(book.id), hasReviewed(viewer?.id, book.id)])
   const track: Track | null = firstAudio?.url
     ? { src: firstAudio.url, title: book.title, subtitle: first?.title || 'Глава 1', href: returnTo, key: `ch-${first!.id}`, onProgressUrl: state.shelf ? `/api/shelf/${state.shelf.id}/` : undefined }
     : null
@@ -266,9 +274,37 @@ export default async function BookPage({ params }: Props) {
         )}
       </Wrap>
 
+      <Wrap>
+        <section id="reviews" className="mt-8 flex scroll-mt-20 flex-col gap-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <H2>Отзывы о книге «{book.title}»</H2>
+            {reviews.count > 0 && <span className="text-sm text-muted">★ {String(reviews.avg).replace('.', ',')} · {reviews.count} {plural(reviews.count, 'отзыв', 'отзыва', 'отзывов')}</span>}
+          </div>
+          {reviews.docs.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-2">
+              {reviews.docs.map((r) => (
+                <article key={r.id} className="rounded-2xl border border-line bg-white p-4">
+                  <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
+                    <span className="font-semibold">{r.authorName || 'Читатель'}</span>
+                    <span className="text-rose" aria-label={`Оценка ${r.rating} из 5`}>{'★'.repeat(Number(r.rating))}<span className="text-petal">{'★'.repeat(5 - Number(r.rating))}</span></span>
+                  </div>
+                  <p className="whitespace-pre-line text-sm text-ink-2">{r.text}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">Отзывов пока нет. Станьте первой, кто расскажет о книге.</p>
+          )}
+          <ReviewForm book={book.id} loggedIn={Boolean(viewer)} returnTo={returnTo} already={reviewed} />
+        </section>
+      </Wrap>
+
       {similar.length > 0 && (
         <section className="mt-6 flex flex-col gap-3">
-          <Wrap><H2>Похожие книги: если понравилось «{book.title}»</H2></Wrap>
+          <Wrap className="flex flex-wrap items-baseline justify-between gap-2">
+            <H2>Похожие книги: если понравилось «{book.title}»</H2>
+            <Link href={`/pohozhie/${book.slug}/`} className="text-sm font-semibold text-rose">Все похожие</Link>
+          </Wrap>
           <div className="scroll-row px-4 pb-1 md:mx-auto md:max-w-[1240px] md:px-6">
             {similar.map((b) => <BookTile key={b.id} book={b} width={120} />)}
           </div>
@@ -299,6 +335,18 @@ export default async function BookPage({ params }: Props) {
           inLanguage: 'ru',
           ...(series ? { isPartOf: { '@type': 'BookSeries', name: series.title, ...(series.path ? { url: `${SITE_URL}${series.path}` } : {}) }, ...(book.series?.order ? { position: book.series.order } : {}) } : {}),
           ...(book.hasAudio ? { publisher: { '@type': 'Organization', name: 'Литмоб', url: SITE_URL } } : {}),
+          ...(reviews.count
+            ? {
+                aggregateRating: { '@type': 'AggregateRating', ratingValue: reviews.avg, reviewCount: reviews.count, bestRating: 5, worstRating: 1 },
+                review: reviews.docs.slice(0, 5).map((r) => ({
+                  '@type': 'Review',
+                  author: { '@type': 'Person', name: r.authorName || 'Читатель' },
+                  reviewRating: { '@type': 'Rating', ratingValue: Number(r.rating), bestRating: 5 },
+                  reviewBody: r.text,
+                  datePublished: r.createdAt.slice(0, 10),
+                })),
+              }
+            : {}),
         }}
       />
     </article>

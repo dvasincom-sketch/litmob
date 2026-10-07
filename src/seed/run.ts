@@ -1,7 +1,10 @@
 /**
- * Наполнение всей структуры сайта. Идемпотентно: повторный запуск обновляет
- * записи (по slug + родителю), ничего не дублирует.
- *   npm run seed
+ * Наполнение всей структуры сайта. Идемпотентно: ничего не дублирует (ищет по slug + родителю).
+ * Новые записи создаёт целиком. У существующих обновляет только структуру и спрос
+ * (связи, главный запрос, частоты) — тексты, которые редактор правит в админке
+ * (название, H1, вводный абзац, подзаголовок, FAQ), не трогает.
+ *   npm run seed             — безопасно, можно запускать на каждом деплое
+ *   npm run seed -- --update — перезаписать и тексты значениями из structure.ts
  * Администратор создаётся, если заданы SEED_ADMIN_EMAIL и SEED_ADMIN_PASSWORD.
  */
 import 'dotenv/config'
@@ -13,9 +16,15 @@ const payload = await getPayload({ config })
 const o = { overrideAccess: true, depth: 0 } as const
 
 type Coll = 'tropes' | 'genres' | 'collections' | 'pages'
+const UPDATE_TEXTS = process.argv.includes('--update') || process.env.SEED_UPDATE === '1'
+const EDITORIAL = ['title', 'h1', 'lead', 'subtitle', 'faq', 'cta', 'meta', 'pitch', 'mustHave', 'forbidden', 'prize']
+const keepEditorial = (data: Record<string, unknown>) =>
+  UPDATE_TEXTS ? data : Object.fromEntries(Object.entries(data).filter(([k]) => !EDITORIAL.includes(k)))
+let nCreated = 0
 async function upsert(collection: Coll, where: Where, data: Record<string, unknown>) {
   const found = await payload.find({ collection, where, limit: 1, ...o })
-  if (found.docs[0]) return (await payload.update({ collection, id: found.docs[0].id, data, ...o })).id as number
+  if (found.docs[0]) return (await payload.update({ collection, id: found.docs[0].id, data: keepEditorial(data), ...o })).id as number
+  nCreated++
   return (await payload.create({ collection, data: data as never, ...o })).id as number
 }
 const demand = (x: { q?: string; v?: number; g?: string; w: string }) => ({ mainQuery: x.q, monthlyVolume: x.v, growth: x.g, wave: x.w })
@@ -58,7 +67,7 @@ for (const g of GENRES) {
   const parent = g.parent ? genreIds.get(g.parent) : undefined
   const where: Where = parent ? { and: [{ slug: { equals: g.slug } }, { parent: { equals: parent } }] } : { and: [{ slug: { equals: g.slug } }, { parent: { exists: false } }] }
   const id = await upsert('genres', where, {
-    title: g.title, slug: g.slug, parent, audioOnly: g.audio ?? false, customPath: g.customPath, subtitle: g.sub,
+    title: g.title, slug: g.slug, parent, audioOnly: g.audio ?? false, customPath: g.customPath, subtitle: g.sub, adult: g.adult ?? false,
     h1: null, // H1 строит шаблон src/lib/landingSeo.ts
     lead: g.lead, tropes: g.tropes?.map((s) => tropeIds.get(s)!).filter(Boolean), published: true, ...demand(g),
   })
@@ -68,11 +77,11 @@ for (const g of GENRES) {
 for (const c of COLLECTIONS)
   await upsert('collections', { slug: { equals: c.slug } }, {
     title: c.title, slug: c.slug, subtitle: c.sub, adult: c.adult ?? false, customPath: c.customPath, audioOnly: c.audio ?? false,
-    tropes: c.tropes?.map((s) => tropeIds.get(s)!).filter(Boolean), h1: c.title, lead: c.lead, published: true, ...demand(c),
+    tropes: c.tropes?.map((s) => tropeIds.get(s)!).filter(Boolean), genres: c.genres?.map((s) => genreIds.get(s)!).filter(Boolean), h1: c.title, lead: c.lead, published: true, ...demand(c),
   })
 
 for (const p of PAGES)
-  await upsert('pages', { path: { equals: p.path } }, { title: p.title, path: p.path, section: p.section, h1: p.title, lead: p.lead, cta: p.cta, published: true, ...demand(p) })
+  await upsert('pages', { path: { equals: p.path } }, { title: p.title, path: p.path, section: p.section, h1: p.h1 ?? p.title, lead: p.lead, cta: p.cta, ...(p.meta ? { meta: p.meta } : {}), published: true, ...demand(p) })
 
 // Первый литмоб площадки — из брифа конкурса «Развод с драконом».
 const mobData = {
@@ -84,7 +93,7 @@ const mobData = {
   narratorsWelcome: true, readerVoting: true, prize: 'Профессиональная озвучка книги-победителя',
 }
 const mob = await payload.find({ collection: 'litmobs', where: { slug: { equals: mobData.slug } }, limit: 1, ...o })
-if (mob.docs[0]) await payload.update({ collection: 'litmobs', id: mob.docs[0].id, data: mobData, ...o })
+if (mob.docs[0]) await payload.update({ collection: 'litmobs', id: mob.docs[0].id, data: keepEditorial(mobData), ...o })
 else await payload.create({ collection: 'litmobs', data: mobData, ...o })
 
 await payload.updateGlobal({ slug: 'site-settings', data: { siteName: 'Литмоб' }, overrideAccess: true })
@@ -95,5 +104,6 @@ if (process.env.SEED_ADMIN_EMAIL && process.env.SEED_ADMIN_PASSWORD) {
     await payload.create({ collection: 'users', data: { email: process.env.SEED_ADMIN_EMAIL, password: process.env.SEED_ADMIN_PASSWORD, name: 'Администратор', roles: ['admin'] }, ...o })
 }
 
+console.log(`Новых записей: ${nCreated}${UPDATE_TEXTS ? ' (тексты перезаписаны)' : ''}.`)
 console.log(`Готово: семейств ${FAMILIES.length}, сюжетов ${nTropes}, уточнений ${nRefs}, жанровых страниц ${GENRES.length}, подборок ${COLLECTIONS.length}, страниц ${PAGES.length}, литмоб 1.`)
 process.exit(0)

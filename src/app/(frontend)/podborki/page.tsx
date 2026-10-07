@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getPageDoc, PageBody } from '@/components/PageText'
 import { staticMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Wrap } from '@/components/Wrap'
@@ -12,6 +13,7 @@ export const metadata: Metadata = staticMetadata(
 )
 
 export default async function Collections() {
+  const pageDoc = await getPageDoc('/podborki/')
   const payload = await getPayloadClient()
   const res = await payload.find({ collection: 'collections', where: { and: [{ published: { equals: true } }, { adult: { not_equals: true } }] }, sort: '-monthlyVolume', limit: 100, depth: 0 })
   return (
@@ -29,6 +31,7 @@ export default async function Collections() {
             {c.subtitle && <span className="text-[13px] text-muted">{c.subtitle}</span>}
           </Link>
         ))}
+        <PageBody page={pageDoc} />
       </Wrap>
     </>
   )

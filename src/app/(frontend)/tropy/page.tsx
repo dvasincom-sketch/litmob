@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { TropeTile } from '@/components/TropeTile'
 import type { Metadata } from 'next'
+import { getPageDoc, PageBody } from '@/components/PageText'
 import { staticMetadata } from '@/lib/seo'
 import { PageHero } from '@/components/PageHero'
 import { Wrap } from '@/components/Wrap'
@@ -13,6 +14,7 @@ export const metadata: Metadata = staticMetadata(
 )
 
 export default async function TropesCatalog() {
+  const pageDoc = await getPageDoc('/tropy/')
   const families = await getAllFamilies()
   const [groups, counts] = await Promise.all([
     Promise.all(families.map(async (f) => ({ f, tropes: await getFamilyTropes(f.id) }))),
@@ -35,6 +37,7 @@ export default async function TropesCatalog() {
             </div>
           </section>
         ))}
+        <PageBody page={pageDoc} />
       </Wrap>
     </>
   )

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { getPageDoc, PageBody } from '@/components/PageText'
 import { staticMetadata } from '@/lib/seo'
 import { GenreArt } from '@/components/GenreArt'
 import { PageHero } from '@/components/PageHero'
@@ -16,6 +17,7 @@ export const metadata: Metadata = staticMetadata(
 )
 
 export default async function Genres() {
+  const pageDoc = await getPageDoc('/zhanr/')
   const payload = await getPayloadClient()
   const [res, counts] = await Promise.all([
     payload.find({ collection: 'genres', where: { published: { equals: true }, parent: { exists: false }, adult: { not_equals: true } }, limit: 100, depth: 0, sort: '-monthlyVolume' }),
@@ -42,6 +44,7 @@ export default async function Genres() {
             )
           })}
         </div>
+        <PageBody page={pageDoc} />
       </Wrap>
     </>
   )

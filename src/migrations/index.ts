@@ -3,6 +3,7 @@ import * as migration_20261006_104516_catalog_pages from './20261006_104516_cata
 import * as migration_20261006_111453_shelf_follows from './20261006_111453_shelf_follows';
 import * as migration_20261006_120000_unique_follows from './20261006_120000_unique_follows';
 import * as migration_20261007_090000_seo_h1_templates from './20261007_090000_seo_h1_templates';
+import * as migration_20261007_093800_reviews_and_fejri from './20261007_093800_reviews_and_fejri';
 
 export const migrations = [
   {
@@ -23,11 +24,16 @@ export const migrations = [
   {
     up: migration_20261006_120000_unique_follows.up,
     down: migration_20261006_120000_unique_follows.down,
-    name: '20261006_120000_unique_follows'
+    name: '20261006_120000_unique_follows',
   },
   {
     up: migration_20261007_090000_seo_h1_templates.up,
     down: migration_20261007_090000_seo_h1_templates.down,
     name: '20261007_090000_seo_h1_templates',
+  },
+  {
+    up: migration_20261007_093800_reviews_and_fejri.up,
+    down: migration_20261007_093800_reviews_and_fejri.down,
+    name: '20261007_093800_reviews_and_fejri'
   },
 ];

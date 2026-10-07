@@ -1,0 +1,59 @@
+{
+  "name": "Эльвира Смелик",
+  "slug": "elvira-smelik",
+  "about": "Эльвира Смелик пишет подростковую и молодёжную прозу: истории о школе, первой любви, дружбе и взрослении, а также мистические триллеры. Вместе с Екатериной Горбуновой она написала хоррор-романы о пионерских лагерях — «Смерть в пионерском галстуке» и его продолжения. Часть ранних фэнтезийных книг выходила под псевдонимом Виктория Эл, новые романы публикуются на Литнете.",
+  "links": [
+    { "label": "Литнет", "url": "https://litnet.com/ru/viktoriya-el-u54770" }
+  ],
+  "genres": ["young-adult", "lyubovnye-romany"],
+  "tropes": [],
+  "series": [
+    {
+      "title": "Брат лучшей подруги",
+      "books": [
+        { "title": "Брат лучшей подруги. Люблю и ненавижу", "year": 2024 },
+        { "title": "Брат лучшей подруги. Ненавижу и люблю", "year": 2024 }
+      ]
+    },
+    {
+      "title": "Зови меня Шинигами",
+      "books": [
+        { "title": "Зови меня Шинигами", "year": 2017 },
+        { "title": "Дикая охота", "year": 2017 }
+      ]
+    },
+    {
+      "title": "Стражи",
+      "books": [
+        { "title": "Мой верный страж", "year": 2020 },
+        { "title": "Магия в наследство", "year": 2021 }
+      ]
+    },
+    {
+      "title": "Осколки",
+      "books": [
+        { "title": "Осколки", "year": 2020 },
+        { "title": "Возьми меня за руку", "year": 2020 }
+      ]
+    }
+  ],
+  "standalone": [
+    { "title": "Серая мышь для королевы", "year": 2016 },
+    { "title": "Нарисуй её тень", "year": 2017 },
+    { "title": "Плохая примета на счастье", "year": 2018 },
+    { "title": "Смерть в пионерском галстуке", "year": 2024 },
+    { "title": "Пионерская клятва на крови", "year": 2025 },
+    { "title": "Зимняя смерть в пионерском галстуке", "year": 2025 }
+  ],
+  "sources": [
+    "https://fantlab.ru/work929326",
+    "https://fantlab.ru/work2076047",
+    "https://fantlab.ru/work2114462",
+    "https://fantlab.ru/work1878836",
+    "https://fantlab.ru/work2035128",
+    "https://fantlab.ru/work2214292",
+    "https://litnet.com/ru/viktoriya-el-u54770",
+    "https://litnet.com/ru/book/brat-luchshei-podrugi-lyublyu-i-nenavizhu-b475415",
+    "https://litnet.com/ru/book/brat-luchshei-podrugi-nenavizhu-i-lyublyu-b477394"
+  ]
+}

@@ -38,7 +38,7 @@ export function LandingView({ doc, crumbs, books, totalBooks, audioCount, childr
   const counter = totalBooks
     ? audioOnly
       ? `Собрали ${totalBooks} ${plural(totalBooks, 'аудиокнигу', 'аудиокниги', 'аудиокниг')}.`
-      : `Собрали ${totalBooks} ${plural(totalBooks, 'книгу', 'книги', 'книг')}, из них ${audioCount} в аудио.`
+      : `Собрали ${totalBooks} ${plural(totalBooks, 'книгу', 'книги', 'книг')}${audioCount ? `, из них ${audioCount} в аудио` : ''}.`
     : ''
   const series = Array.from(
     new Map(

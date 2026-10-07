@@ -79,6 +79,7 @@ export interface Config {
     'litmob-entries': LitmobEntry;
     follows: Follow;
     shelf: Shelf;
+    reviews: Review;
     users: User;
     pages: Page;
     media: Media;
@@ -121,6 +122,7 @@ export interface Config {
     'litmob-entries': LitmobEntriesSelect<false> | LitmobEntriesSelect<true>;
     follows: FollowsSelect<false> | FollowsSelect<true>;
     shelf: ShelfSelect<false> | ShelfSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -881,6 +883,24 @@ export interface Shelf {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: number;
+  book: number | Book;
+  user: number | User;
+  /**
+   * Показывается под отзывом.
+   */
+  authorName?: string | null;
+  rating: number;
+  text: string;
+  status?: ('pending' | 'approved' | 'rejected') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
@@ -1019,6 +1039,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'shelf';
         value: number | Shelf;
+      } | null)
+    | ({
+        relationTo: 'reviews';
+        value: number | Review;
       } | null)
     | ({
         relationTo: 'users';
@@ -1451,6 +1475,20 @@ export interface ShelfSelect<T extends boolean = true> {
   status?: T;
   chapter?: T;
   positionSec?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  book?: T;
+  user?: T;
+  authorName?: T;
+  rating?: T;
+  text?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

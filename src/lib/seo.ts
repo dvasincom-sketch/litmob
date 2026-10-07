@@ -115,3 +115,15 @@ export function buildMetadata(doc: SeoDoc, opts: Opts = {}): Metadata {
 export function staticMetadata(path: string, title: string, description: string, opts: Omit<Opts, 'title' | 'description' | 'path'> = {}): Metadata {
   return buildMetadata({ path }, { ...opts, title, description, path })
 }
+
+/** Карточку книги индексируем, только если на ней есть что-то своё: аудио или наш текст «о чём». */
+export function bookIndexable(b: { hasAudio?: boolean | null; hook?: string | null; about?: unknown }) {
+  const aboutHasText = b.about ? /"text":"[^"]{20,}/.test(JSON.stringify(b.about)) : false
+  return Boolean(b.hasAudio || (b.hook && b.hook.trim().length > 40) || aboutHasText)
+}
+
+/** Первый вариант title, который укладывается в 70 знаков (с брендом, если влезает). */
+export function fitTitle(...variants: string[]) {
+  const v = variants.map(norm).find((t) => t.length <= 70) ?? norm(variants[variants.length - 1])
+  return brand(v)
+}

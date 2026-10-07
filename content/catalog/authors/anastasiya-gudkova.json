@@ -1,0 +1,47 @@
+{
+  "name": "Анастасия Гудкова",
+  "slug": "anastasiya-gudkova",
+  "about": "Пишет любовное и юмористическое фэнтези: истории о попаданках, драконах, ведьмах и бытовое фэнтези с героинями, открывающими своё дело в другом мире. Среди книг — «Забери мою тьму», «Яга. Начало», «Случайное наследство, или замуж (не) пойду!»; часть романов написана в соавторстве. Электронные книги и аудиокниги выходят на ЛитРес.",
+  "links": [
+    {
+      "label": "ЛитРес",
+      "url": "https://litres.com/author/anastasiya-aleksandrovna-gudkova/"
+    }
+  ],
+  "genres": [
+    "lyubovnoe-fentezi",
+    "popadanka",
+    "bytovoe-fentezi"
+  ],
+  "tropes": [],
+  "series": [],
+  "standalone": [
+    {
+      "title": "Забери мою тьму",
+      "year": 2023
+    },
+    {
+      "title": "Яга. Начало"
+    },
+    {
+      "title": "Измена. Сердце дракона"
+    },
+    {
+      "title": "Академия Ориона"
+    },
+    {
+      "title": "Маруся в Запределье"
+    },
+    {
+      "title": "Случайное наследство, или замуж (не) пойду!"
+    },
+    {
+      "title": "Праздничное агентство попаданки"
+    }
+  ],
+  "sources": [
+    "https://litres.com/author/anastasiya-aleksandrovna-gudkova/",
+    "https://fantlab.ru/work1706324",
+    "https://litgorod.ru/profile/135396/books"
+  ]
+}

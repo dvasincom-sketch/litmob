@@ -1,0 +1,51 @@
+{
+  "name": "Екатерина Аверина",
+  "slug": "ekaterina-averina",
+  "about": "Екатерина Аверина пишет современные любовные романы и молодёжную прозу: истории о сложных героях, сводных братьях и сёстрах, запретных чувствах и вторых шансах. Среди её циклов — «Всадники апокалипсиса», «Верь мне» и «В поисках счастья. Дети»; часть книг написана в соавторстве с Анной Бигси. Новые книги публикуются на Литнете, многие выходят на ЛитРес в электронном и аудиоформате.",
+  "links": [
+    { "label": "Литнет", "url": "https://litnet.com/ru/ekaterina-averina-u136123" },
+    { "label": "ЛитРес", "url": "https://litres.com/author/ekaterina-averina/" }
+  ],
+  "genres": ["lyubovnye-romany", "young-adult"],
+  "tropes": [],
+  "series": [
+    {
+      "title": "Всадники апокалипсиса",
+      "books": [
+        { "title": "Я решил, что ты моя", "year": 2023 },
+        { "title": "Между нами (любовь) война", "year": 2023 },
+        { "title": "Наша первая осень", "year": 2023 },
+        { "title": "Сводные. Стану первым", "year": 2023 }
+      ]
+    },
+    {
+      "title": "Верь мне",
+      "books": [
+        { "title": "(не) Верю" },
+        { "title": "Верь мне" }
+      ]
+    },
+    {
+      "title": "В поисках счастья. Дети",
+      "books": [
+        { "title": "Ты будешь просить еще!" },
+        { "title": "Филипп. Я (не) умею любить" },
+        { "title": "Этим летом будет жарко" }
+      ]
+    }
+  ],
+  "standalone": [
+    { "title": "Покровитель", "year": 2023 }
+  ],
+  "sources": [
+    "https://litnet.com/ru/ekaterina-averina-u136123",
+    "https://litnet.com/ru/book/ya-reshil-chto-ty-moya-b438538",
+    "https://litnet.com/ru/book/mezhdu-nami-lyubov-voina-b445840",
+    "https://litnet.com/ru/book/nasha-pervaya-osen-b452522",
+    "https://litnet.com/ru/book/svodnye-stanu-pervym-b460305",
+    "https://litnet.com/ru/book/pokrovitel-b448965",
+    "https://litres.com/author/ekaterina-averina/",
+    "https://litres.com/series/ver-mne-830071/",
+    "https://litres.com/series/deti-cikla-v-poiskah-schastya-830014/"
+  ]
+}

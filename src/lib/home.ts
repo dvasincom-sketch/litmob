@@ -9,7 +9,8 @@ export const getHomeData = cache(async () => {
   const pub = { published: { equals: true } }
   const [audioBooks, newBooks, wave1, collections, narrators, genres, litmobs] = await Promise.all([
     payload.find({ collection: 'books', where: { and: [pub, { hasAudio: { equals: true } }] }, sort: '-publishedAt', limit: 8, depth: 1 }),
-    payload.find({ collection: 'books', where: pub, sort: '-publishedAt', limit: 8, depth: 1 }),
+    // Без аудио на главную берём только книги с нашим описанием (не справочные карточки каталога).
+    payload.find({ collection: 'books', where: { and: [pub, { hook: { exists: true } }] }, sort: '-publishedAt', limit: 8, depth: 1 }),
     payload.find({ collection: 'tropes', where: { and: [pub, { kind: { equals: 'trope' } }, { adult: { not_equals: true } }, { wave: { equals: '1' } }] }, sort: '-monthlyVolume', limit: 12, depth: 0 }),
     payload.find({ collection: 'collections', where: { and: [pub, { adult: { not_equals: true } }] }, sort: '-monthlyVolume', limit: 6, depth: 0 }),
     payload.find({ collection: 'narrators', where: pub, limit: 4, depth: 1 }),
@@ -23,7 +24,7 @@ export const getHomeData = cache(async () => {
       return [g.id, kids.docs as Genre[]] as const
     }),
   )
-  const featured = (audioBooks.docs[0] || newBooks.docs[0] || null) as Book | null
+  const featured = (audioBooks.docs[0] || null) as Book | null
   const firstChapter = featured
     ? (await payload.find({ collection: 'chapters', where: { and: [pub, { book: { equals: featured.id } }, { audio: { exists: true } }] }, sort: 'order', limit: 1, depth: 1 })).docs[0]
     : null

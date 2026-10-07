@@ -9,6 +9,7 @@ export { BottomNav } from './BottomNav'
 export const NAV = [
   { href: '/tropy/', label: 'Сюжеты' },
   { href: '/zhanr/', label: 'Жанры' },
+  { href: '/audio/', label: 'Аудиокниги' },
   { href: '/podborki/', label: 'Подборки' },
   { href: '/litmoby/', label: 'Литмобы' },
   { href: '/chtecy/', label: 'Чтецы' },
@@ -21,9 +22,9 @@ export async function SiteHeader() {
     <header className="on-dark bg-wine text-white">
       <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-6 px-4 py-3.5 md:px-6">
         <Logo />
-        <nav aria-label="Разделы" className="hidden flex-1 gap-6 text-[15px] font-medium text-blush md:flex">
+        <nav aria-label="Разделы" className="hidden flex-1 gap-4 text-[15px] font-medium text-blush md:flex lg:gap-6">
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href}>
+            <Link key={n.href} href={n.href} className={n.href === '/chtecy/' || n.href === '/podborki/' ? 'hidden lg:inline' : ''}>
               {n.label}
             </Link>
           ))}
@@ -75,12 +76,14 @@ export async function SiteFooter() {
             <Logo />
             <p className="max-w-xs text-[13px] text-blush/80">Книги и аудиокниги по любимому сюжету. Первая глава бесплатно.</p>
           </div>
-          {col('Разделы', NAV)}
+          {col('Разделы', [...NAV, { href: '/avtory/', label: 'Авторы' }, { href: '/serii/', label: 'Серии по порядку' }, { href: '/zarubezhnye/romantazija/', label: 'Романтазия и BookTok' }, { href: '/slovar-romfanta/', label: 'Словарь ромфанта' }])}
           {col('Жанры', genres.docs.map((g) => ({ href: g.path || '#', label: g.title })))}
           {col('Авторам и чтецам', [
             { href: '/chtecam/', label: 'Стать чтецом' },
             { href: '/ozvuchka-knig/', label: 'Озвучить книгу' },
             { href: '/litmoby/sozdat/', label: 'Создать литмоб' },
+            { href: '/avtoram/kak-napisat-knigu/', label: 'Как написать книгу' },
+            { href: '/avtoram/kak-prodat-knigu/', label: 'Как продать книгу' },
             { href: '/avtoram/literaturnye-konkursy/', label: 'Конкурсы' },
             { href: '/pravoobladatelyam/', label: 'Правообладателям' },
           ])}

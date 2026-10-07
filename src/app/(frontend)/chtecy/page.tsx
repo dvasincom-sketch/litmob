@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Wrap } from '@/components/Wrap'
 import type { Metadata } from 'next'
+import { getPageDoc, PageBody } from '@/components/PageText'
 import { staticMetadata } from '@/lib/seo'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getPayloadClient } from '@/lib/payload'
@@ -13,6 +14,7 @@ export const metadata: Metadata = staticMetadata(
 )
 
 export default async function Narrators() {
+  const pageDoc = await getPageDoc('/chtecy/')
   const payload = await getPayloadClient()
   const res = await payload.find({ collection: 'narrators', where: { published: { equals: true } }, limit: 200, depth: 0, sort: 'name' })
   return (
@@ -29,6 +31,7 @@ export default async function Narrators() {
           ))}
         </div>
       )}
+      <PageBody page={pageDoc} />
     </Wrap>
   )
 }

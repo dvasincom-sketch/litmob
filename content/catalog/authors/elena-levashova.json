@@ -1,0 +1,30 @@
+{
+  "name": "Елена Левашова",
+  "slug": "elena-levashova",
+  "about": "Пишет современные любовные романы о семье и отношениях: истории о разводе и жизни после него, измене, бывших, втором шансе и чужих детях, которые становятся родными. Публикуется на Литнете, книги выходят на ЛитРес, в том числе в аудиоформате, роман «(Не)настоящая жена» издан в АСТ.",
+  "links": [
+    { "label": "Литнет", "url": "https://litnet.com/ru/elena-levashova-u1875977" },
+    { "label": "ЛитРес", "url": "https://litres.com/author/elena-levashova/" }
+  ],
+  "genres": ["lyubovnye-romany"],
+  "tropes": ["izmena", "byvshie", "vtoroj-shans"],
+  "series": [],
+  "standalone": [
+    { "title": "Сжигая мосты. Развод" },
+    { "title": "После развода. Вернусь любой ценой" },
+    { "title": "Лучше меня не найдешь" },
+    { "title": "Крылья для двоих. Развод" },
+    { "title": "Меня не сломать" },
+    { "title": "Подарок на развод" },
+    { "title": "Капкан для предателя" },
+    { "title": "Идеальное прикрытие" },
+    { "title": "(Не)настоящая жена" },
+    { "title": "Мы (не) навсегда" }
+  ],
+  "sources": [
+    "https://litres.com/author/elena-levashova/",
+    "https://litnet.com/ru/elena-levashova-u1875977",
+    "https://mybook.ru/author/elena-levashova-2/",
+    "https://ast.ru/authors/levashova-elena--itd045275/"
+  ]
+}

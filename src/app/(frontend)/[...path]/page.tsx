@@ -6,12 +6,19 @@ import type { Page as PageDoc } from '@/payload-types'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Faq } from '@/components/Faq'
 import { Wrap } from '@/components/Wrap'
+import { AudioHub } from '@/components/AudioHub'
+import { LitmobTheme } from '@/components/LitmobTheme'
 import { hasLanding, LandingPage, landingMetadata } from '@/lib/landing'
 import { getPayloadClient } from '@/lib/payload'
 import { joinPath } from '@/lib/paths'
-import { brand, buildMetadata, cap, low, sentences } from '@/lib/seo'
+import { brand, buildMetadata, cap, fitTitle, low, sentences } from '@/lib/seo'
 
 type Props = { params: Promise<{ path: string[] }> }
+
+/** Страницы со своей вёрсткой: данные из каталога + текст страницы из админки. */
+const SPECIAL: Record<string, (props: { page: PageDoc }) => Promise<React.ReactElement> | React.ReactElement> = {
+  '/audio/': AudioHub,
+}
 
 /**
  * Всё, у чего адрес задаётся целиком: контентные страницы (/chtecam/, /avtoram/…),
@@ -38,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Главный запрос — в начало title, если его нет в H1.
     let title = q && !h1.toLowerCase().includes(q.toLowerCase()) ? `${cap(q)} — ${low(h1)}` : h1
     if (title.length > 70) title = h1
-    if (title.length < 30) title = title.includes('Литмоб') ? `${title}: книги и аудиокниги любовного фэнтези` : `${title} — Литмоб, книги и аудиокниги любовного фэнтези`
+    if (title.length < 30) title = fitTitle(title.includes('Литмоб') ? `${title}: книги и аудиокниги любовного фэнтези` : `${title} — Литмоб, книги и аудиокниги любовного фэнтези`, `${title}: гид Литмоба`, title)
     const tail: Record<string, string> = {
       authors: 'Гид Литмоба для авторов: публикация, литмобы, озвучка книг',
       narrators: 'Гид Литмоба для чтецов: как начать озвучивать книги и зарабатывать',
@@ -58,6 +65,8 @@ export default async function CatchAll({ params }: Props) {
   if (!r) notFound()
   if (r.type !== 'page') return <LandingPage kind={r.type} segments={path} prefix="" />
   const p = r.page
+  const Special = p.path ? SPECIAL[p.path] || (p.path.startsWith('/litmoby/temy/') ? LitmobTheme : undefined) : undefined
+  if (Special) return <Special page={p} />
   return (
     <article>
       <header className="on-dark bg-wine text-white">

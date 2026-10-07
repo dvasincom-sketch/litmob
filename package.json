@@ -23,7 +23,8 @@
     "test": "vitest run",
     "seed:demo": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/demo.ts",
     "seed:content": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/content.ts",
-    "admin": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/admin.ts"
+    "admin": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/admin.ts",
+    "seed:catalog": "cross-env NODE_OPTIONS=--no-deprecation tsx src/seed/catalog.ts"
   },
   "dependencies": {
     "@fontsource-variable/golos-text": "^5.3.0",

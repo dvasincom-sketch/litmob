@@ -4,11 +4,12 @@ import { joinPath } from '@/lib/paths'
 
 type Props = { params: Promise<{ slug: string[] }> }
 
-/** Раздел 18+: сюжеты (омегаверс) и подборки (/18/podborki/…). */
+/** Раздел 18+: сюжеты (омегаверс), жанры (гаремник) и подборки (/18/podborki/…). */
 async function kindOf(slug: string[]) {
   const path = joinPath('/18', ...slug)
   if (await hasLanding('tropes', path)) return 'tropes' as const
   if (await hasLanding('collections', path)) return 'collections' as const
+  if (await hasLanding('genres', path)) return 'genres' as const
   return null
 }
 

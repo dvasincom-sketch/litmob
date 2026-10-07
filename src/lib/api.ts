@@ -30,6 +30,7 @@ export const api = {
   shelfAdd: (book: number, status = 'want') => call<{ doc: { id: number } }>('/api/shelf/', 'POST', { book, status }),
   shelfUpdate: (id: number, data: Json) => call(`/api/shelf/${id}/`, 'PATCH', data),
   shelfRemove: (id: number) => call(`/api/shelf/${id}/`, 'DELETE'),
+  review: (book: number, rating: number, text: string) => call('/api/reviews/', 'POST', { book, rating, text }),
 }
 
 /** Действия, которые гость начал до входа: выполняем сразу после входа. */

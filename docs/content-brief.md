@@ -83,3 +83,9 @@ path: /tropy/razvod-s-drakonom/
 /zhanr/lyubovnoe-fentezi/ /zhanr/lyubovnoe-fentezi/audio/ /zhanr/bytovoe-fentezi/ /zhanr/bytovoe-fentezi/audio/ /zhanr/popadanka/ /zhanr/popadanka/audio/ /zhanr/lyubovnye-romany/ /zhanr/lyubovnye-romany/audio/ /zhanr/dark-romans/ /zhanr/akademiya-magii/ /zhanr/popadancy/ /zhanr/popadancy/audio/ /zhanr/popadancy/v-proshloe/ /zhanr/popadancy/v-sssr/ /zhanr/popadancy/rossijskaya-imperiya/ /zhanr/litrpg/ /zhanr/litrpg/popadancy/ /zhanr/boyarka/ /zhanr/detektivy/ /zhanr/detektivy/audio/ /audio/rasskazy/
 /podborki/knigi-s-drakonami/ /podborki/audio-romfant-mesyaca/ /podborki/novinki-romfanta/ /podborki/kultivaciya/ /podborki/luchshie-trillery/ /podborki/fantastika/ /podborki/chastnyj-detektiv/ /podborki/sagi-o-vampirah/ /pohozhie/
 /litmoby/razvod-s-drakonom/
+/zhanr/fentezi/ /zhanr/fentezi/audio/ /zhanr/fentezi/yumoristicheskoe/ /zhanr/fentezi/temnoe/ /zhanr/fentezi/boevoe/
+/zhanr/fantastika/ /zhanr/fantastika/audio/ /zhanr/fantastika/boevaya/ /zhanr/fantastika/kosmicheskaya/ /zhanr/fantastika/postapokalipsis/ /zhanr/fantastika/antiutopiya/
+/zhanr/istoricheskij-lyubovnyj-roman/ /zhanr/young-adult/ /18/garemnik/
+/tropy/vedmy/ /tropy/elfy/ /audio/
+/litmoby/kalendar/ /litmoby/temy/razvod/ /litmoby/temy/popadanka/ /litmoby/temy/drakony/ /litmoby/temy/muzhya-iz-kosmosa/ /litmoby/temy/naslednica/ /litmoby/temy/byvshie/ /litmoby/temy/izmena/ /litmoby/sozdat/
+/zarubezhnye/romantazija/ /zarubezhnye/bridzhertony/ /avtoram/kak-napisat-knigu/ /avtoram/gde-opublikovat-knigu/ /avtoram/literaturnye-konkursy/ /avtoram/chto-takoe-syuzhet/ /avtoram/personazh/ /avtoram/kak-prodat-knigu/ /avtoram/oblozhka-dlya-knigi/ /slovar-romfanta/ /sravnenie/litnet-author-today-litres/ /ozvuchka-knig/ /ozvuchka-ii-ili-chtec/ /chtecam/ /podpiska/ /o-proekte/
