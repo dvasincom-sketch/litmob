@@ -17,6 +17,7 @@ import { plural } from '@/lib/home'
 import { SITE_URL } from '@/lib/payload'
 import { bookIndexable, buildMetadata, fitTitle, sentences } from '@/lib/seo'
 import { getViewer, getViewerState } from '@/lib/session'
+import { LITMOB_THEMES } from '@/lib/litmobThemes'
 
 type Props = { params: Promise<{ slug: string }> }
 const objs = <T,>(v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === 'object') : []) as T[]
@@ -24,11 +25,23 @@ const objs = <T,>(v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof
 const HEAT: Record<string, string> = { none: 'Без откровенных сцен', moderate: 'Умеренно откровенно', explicit: '18+' }
 const STATUS: Record<string, string> = { ongoing: 'Пишется', completed: 'Завершена', frozen: 'Заморожена' }
 
+/**
+ * Справочная карточка: книги нет на площадке (ни глав, ни озвучки) — только сведения о ней,
+ * ссылка на площадку автора и идея для своего литмоба. Слушать здесь нечего, поэтому
+ * вместо плеера и подписки — «где читать» и «вдохновиться и написать свой сюжет».
+ */
+const isReference = (b: Book, chapters: number) => b.mode !== 'licensed' && !b.hasAudio && chapters === 0
+const yearOf = (b: Book) => (b.publishedAt ? new Date(b.publishedAt).getUTCFullYear() : null)
+
 /** Title по шаблону из «Структуры»: [Название] — слушать аудиокнигу, [Автор], читает [Чтец]. */
-function titleFor(b: Book) {
+function titleFor(b: Book, reference: boolean) {
   const authors = objs<Author>(b.authors).map((a) => a.name).join(', ')
   const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
   const tr = b.isTranslation && b.originalTitle ? ` (${b.originalTitle} на русском)` : ''
+  if (reference) {
+    const by = authors ? `, ${authors}` : ''
+    return fitTitle(`${b.title}${tr}${by} — о чём книга и где читать`, `${b.title}${by} — о чём книга и где читать`, `${b.title} — о чём книга и где читать`, `${b.title}${by}`, b.title)
+  }
   const action = b.hasAudio ? 'слушать аудиокнигу' : b.status === 'completed' ? 'читать полностью' : 'читать книгу'
   return fitTitle(
     `${b.title}${tr} — ${action}${authors ? `, ${authors}` : ''}${b.hasAudio && narr ? `, читает ${narr}` : ''}`,
@@ -40,6 +53,16 @@ function titleFor(b: Book) {
 
 function descriptionFor(b: Book, chapters: number) {
   const authors = objs<Author>(b.authors).map((a) => a.name).join(', ')
+  if (isReference(b, chapters)) {
+    const series = b.series?.ref && typeof b.series.ref === 'object' ? (b.series.ref as Series) : null
+    const year = yearOf(b)
+    return sentences(
+      `«${b.title}»${authors ? ` — ${authors}` : ''}${year ? `, ${year}` : ''}`,
+      b.hook,
+      [series ? `Цикл «${series.title}»${b.series?.order ? `, книга ${b.series.order}` : ''}` : null, STATUS[b.status || 'ongoing']].filter(Boolean).join(', '),
+      'Где читать, похожие книги и идея для своего литмоба',
+    )
+  }
   const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
   const facts = [
     STATUS[b.status || 'ongoing'],
@@ -61,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const chapters = await getChaptersOf(book.id)
   const cover = book.cover && typeof book.cover === 'object' ? (book.cover as { url?: string | null }).url : null
   return buildMetadata({ ...book, lead: book.hook }, {
-    title: titleFor(book),
+    title: titleFor(book, isReference(book, chapters.length)),
     description: descriptionFor(book, chapters.length),
     kicker: book.hasAudio ? 'Аудиокнига' : 'Книга',
     image: cover || null,
@@ -96,6 +119,11 @@ export default async function BookPage({ params }: Props) {
   const state = await getViewerState(viewer?.id, { book: book.id })
   const returnTo = book.path || `/kniga/${book.slug}/`
   const [reviews, reviewed] = await Promise.all([getReviews(book.id), hasReviewed(viewer?.id, book.id)])
+  const reference = isReference(book, chapters.length)
+  const year = yearOf(book)
+  const tropeSlugs = new Set(tropes.map((t) => t.slug))
+  const theme = Object.entries(LITMOB_THEMES).find(([, t]) => t.tropes.some((x) => tropeSlugs.has(x)))
+  const createHref = `/litmoby/sozdat/?book=${encodeURIComponent(book.slug || '')}`
   const track: Track | null = firstAudio?.url
     ? { src: firstAudio.url, title: book.title, subtitle: first?.title || 'Глава 1', href: returnTo, key: `ch-${first!.id}`, onProgressUrl: state.shelf ? `/api/shelf/${state.shelf.id}/` : undefined }
     : null
@@ -132,6 +160,32 @@ export default async function BookPage({ params }: Props) {
       )}
     </section>
   )
+  const whereCard = (dark: boolean) => (
+    <section id="where" className={`flex scroll-mt-20 flex-col gap-3 rounded-2xl p-3.5 md:p-5 ${dark ? 'bg-wine-2 text-white' : 'bg-white shadow-[var(--shadow-card)]'}`}>
+      <span className="font-semibold">Где читать</span>
+      {ext ? (
+        <a href={ext.url} target="_blank" rel="nofollow noopener" className={`rounded-xl px-4 py-3 text-center font-semibold no-underline ${dark ? 'bg-white text-wine' : 'bg-rose text-white'}`}>
+          Читать у автора на {ext.label} ↗
+        </a>
+      ) : (
+        <span className={`text-sm ${dark ? 'text-blush' : 'text-muted'}`}>Книга издаётся на площадке автора. Ссылку добавим, как только автор подтвердит страницу.</span>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <ShelfButton book={book.id} shelfId={state.shelf?.id ?? null} loggedIn={Boolean(viewer)} returnTo={returnTo} withLabel className={`flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold ${dark ? 'border-white/30 bg-transparent text-white' : 'border-petal bg-white text-rose'}`} />
+        <a href="#inspire" className={`flex h-11 items-center rounded-xl px-3.5 text-sm font-semibold no-underline ${dark ? 'text-pink' : 'text-rose'}`}>Написать свою историю →</a>
+      </div>
+      <span className={`text-xs ${dark ? 'text-blush' : 'text-muted'}`}>Литмоб не публикует текст этой книги — здесь справка о ней и ссылка на автора.</span>
+    </section>
+  )
+  const facts = [
+    authors.length ? { k: authors.length > 1 ? 'Авторы' : 'Автор', v: <>{authors.map((a, i) => <span key={a.id}>{i > 0 && ', '}<Link href={a.path || '#'} className="font-semibold text-rose">{a.name}</Link></span>)}</> } : null,
+    series ? { k: 'Цикл', v: <><Link href={series.path || '#'} className="font-semibold text-rose">{series.title}</Link>{book.series?.order ? `, книга ${book.series.order}${seriesBooks.length > 1 ? ` из ${seriesBooks.length}` : ''}` : ''}</> } : null,
+    year ? { k: 'Год', v: <>{year}</> } : null,
+    { k: 'Статус', v: <>{STATUS[book.status || 'ongoing']}</> },
+    book.happyEnding === 'yes' ? { k: 'Финал', v: <>Счастливый конец</> } : null,
+    book.heat && book.heat !== 'none' ? { k: 'Откровенность', v: <>{HEAT[book.heat]}</> } : null,
+    book.isTranslation && book.originalTitle ? { k: 'Оригинал', v: <>{book.originalTitle}</> } : null,
+  ].filter(Boolean) as { k: string; v: React.ReactNode }[]
   const chapterState = (i: number, c: (typeof chapters)[number]) => (c.isFree || i < free ? { t: 'Бесплатно', cls: 'text-free' } : { t: 'По подписке', cls: 'text-muted' })
 
   return (
@@ -160,13 +214,13 @@ export default async function BookPage({ params }: Props) {
                 </span>
               )}
               <span className="text-[13px] text-blush">
-                {[series && book.series?.order ? `Книга ${book.series.order} из ${seriesBooks.length || book.series.order}` : null, book.audioHours ? `${book.audioHours} ч аудио` : null, chapters.length ? `${chapters.length} ${plural(chapters.length, 'глава', 'главы', 'глав')}` : null].filter(Boolean).join(' · ')}
+                {[series && book.series?.order ? `Книга ${book.series.order}${seriesBooks.length > 1 ? ` из ${seriesBooks.length}` : ''}` : null, book.audioHours ? `${book.audioHours} ч аудио` : null, chapters.length ? `${chapters.length} ${plural(chapters.length, 'глава', 'главы', 'глав')}` : null].filter(Boolean).join(' · ')}
               </span>
               <span className="text-[13px] text-pink">{labels.join(' · ')}</span>
               {book.hook && <span className="mt-1 hidden max-w-xl text-blush md:block">{book.hook}</span>}
             </div>
           </div>
-          <div className="hidden lg:block">{listenCard(true)}</div>
+          <div className="hidden lg:block">{reference ? whereCard(true) : listenCard(true)}</div>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {tropes.map((t) => (
@@ -177,7 +231,7 @@ export default async function BookPage({ params }: Props) {
       </header>
 
       <Wrap className="flex flex-col gap-6 md:pt-10 *:max-w-[820px]">
-        <div className="-mt-2 lg:hidden">{listenCard(false)}</div>
+        <div className="-mt-2 lg:hidden">{reference ? whereCard(false) : listenCard(false)}</div>
 
         {chapters.length > 0 && (
           <section className="flex flex-col gap-2.5">
@@ -210,11 +264,13 @@ export default async function BookPage({ params }: Props) {
           </section>
         )}
 
-        <section className="on-dark flex flex-col gap-2.5 rounded-2xl bg-wine p-4 text-white">
-          <span className="font-display text-xl">Слушайте всю книгу</span>
-          <span className="text-sm text-blush">Подписка открывает все главы этой книги и каталог аудиоверсий. Часть денег получают автор и чтец.</span>
-          <Link href="/podpiska/" className="rounded-xl bg-white px-4 py-[13px] text-center font-semibold text-wine">Оформить подписку</Link>
-        </section>
+        {!reference && (
+          <section className="on-dark flex flex-col gap-2.5 rounded-2xl bg-wine p-4 text-white">
+            <span className="font-display text-xl">Слушайте всю книгу</span>
+            <span className="text-sm text-blush">Подписка открывает все главы этой книги и каталог аудиоверсий. Часть денег получают автор и чтец.</span>
+            <Link href="/podpiska/" className="rounded-xl bg-white px-4 py-[13px] text-center font-semibold text-wine">Оформить подписку</Link>
+          </section>
+        )}
 
         <section className="flex flex-col gap-2.5">
           <H2>О чём книга «{book.title}»</H2>
@@ -229,6 +285,37 @@ export default async function BookPage({ params }: Props) {
           )}
           {book.warnings?.length ? <p className="text-[13px] text-muted">Предупреждения: {book.warnings.map((w) => w.text).join(' · ')}</p> : null}
         </section>
+
+        {reference && facts.length > 0 && (
+          <section className="flex flex-col gap-2.5">
+            <H2>Справка о книге</H2>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-[14px] border border-line bg-white p-3.5 text-sm">
+              {facts.map((f) => (
+                <div key={f.k} className="contents">
+                  <dt className="text-muted">{f.k}</dt>
+                  <dd>{f.v}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        {reference && (
+          <section id="inspire" className="on-dark flex scroll-mt-20 flex-col gap-2.5 rounded-2xl bg-wine p-4 text-white md:p-5">
+            <span className="font-display text-xl">Вдохновились «{book.title}»?</span>
+            <span className="text-sm text-blush">
+              Напишите свою историю на тот же сюжет{tropes.length ? <> — {tropes.slice(0, 3).map((t) => t.title.toLowerCase()).join(', ')}</> : null}. В литмобе несколько авторов пишут книги по общим правилам и в общие сроки, а читатели следят за продой каждого.
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <Link href={createHref} className="rounded-xl bg-white px-4 py-3 text-center font-semibold text-wine no-underline">Собрать литмоб по мотивам</Link>
+              {theme ? (
+                <Link href={`/litmoby/temy/${theme[0]}/`} className="rounded-xl border border-white/30 px-4 py-3 text-center font-semibold text-white no-underline">Литмоб «{theme[1].title}»</Link>
+              ) : (
+                <Link href="/litmoby/" className="rounded-xl border border-white/30 px-4 py-3 text-center font-semibold text-white no-underline">Все литмобы</Link>
+              )}
+            </div>
+          </section>
+        )}
 
         {narrators.length > 0 && (
           <section className="flex flex-col gap-2.5">
@@ -258,7 +345,7 @@ export default async function BookPage({ params }: Props) {
                   </div>
                 ) : (
                   <Link key={s.id} href={s.path || '#'} className="flex flex-col gap-0.5 rounded-xl border border-line bg-white p-2.5">
-                    <span className="text-xs text-muted">Книга {s.series?.order}{s.hasAudio ? '' : ' · аудио скоро'}</span>
+                    <span className="text-xs text-muted">Книга {s.series?.order}{s.hasAudio ? ' · есть аудио' : ''}</span>
                     <span className="text-sm font-semibold">{s.title}</span>
                   </Link>
                 ),
@@ -269,7 +356,7 @@ export default async function BookPage({ params }: Props) {
 
         {book.mode === 'reference' && !book.claimed && (
           <p className="text-[13px] text-muted">
-            Это справочная страница. Вы автор? <Link href={`/pravoobladatelyam/?book=${book.id}`} className="font-semibold text-rose">Подтвердите страницу</Link> — добавим обложку, главы и озвучку.
+            Это справочная страница. Вы автор? <Link href={`/pravoobladatelyam/?book=${book.id}`} className="font-semibold text-rose">Подтвердите страницу</Link> — добавим обложку, ссылку на книгу, а по договору — главы и озвучку.
           </p>
         )}
       </Wrap>
@@ -312,9 +399,17 @@ export default async function BookPage({ params }: Props) {
       )}
 
       <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-line bg-white px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
-        <a href="#listen" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white">
-          {track ? 'Слушать бесплатно' : book.status === 'ongoing' ? 'Сообщить о проде' : 'Хочу послушать'}
-        </a>
+        {reference ? (
+          ext ? (
+            <a href={ext.url} target="_blank" rel="nofollow noopener" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white no-underline">Где читать ↗</a>
+          ) : (
+            <a href="#inspire" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white no-underline">Написать свою историю</a>
+          )
+        ) : (
+          <a href="#listen" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white">
+            {track ? 'Слушать бесплатно' : book.status === 'ongoing' ? 'Сообщить о проде' : 'Хочу послушать'}
+          </a>
+        )}
         <ShelfButton book={book.id} shelfId={state.shelf?.id ?? null} loggedIn={Boolean(viewer)} returnTo={returnTo} className="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-petal bg-white" />
       </div>
 
