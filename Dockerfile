@@ -20,7 +20,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 CMD cur
 #   у существующих обновляет только связи и спрос, тексты из админки не трогает. Можно держать включённым.
 # CONTENT_ON_START=1 — тексты из content/ в пустые поля и справочный каталог авторов, серий и книг
 #   (content/catalog/). Повторный запуск ничего не дублирует. Можно держать включённым.
-# Сиды идут в фоне ПОСЛЕ старта сервера: первый прогон каталога — это ~20 тыс. запросов к БД,
-# с удалённой базой он длится дольше, чем платформа ждёт health-check. Ошибка сида не роняет сайт.
-# Пул сидов — 2 подключения: в базе ~20 слотов, а при деплое старый и новый контейнеры работают одновременно.
-CMD ["sh", "-c", "npm run migrate || exit 1; ( export DB_POOL_MAX=2; if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi || echo 'seed failed' >&2 ) & exec npm run start"]
+# Старт: сервер запускается сразу и сам применяет миграции (prodMigrations, src/instrumentation.ts),
+# /api/health/ отвечает с первой секунды. Сиды идут в фоне: ждут, пока /api/health/ сообщит db=ready,
+# и работают с пулом в 2 подключения (в базе ~20 слотов, при деплое живут старый и новый контейнеры).
+# Ошибка сида не роняет сайт. Строки [startup]/[seeds] в логе — с временем, чтобы видеть, где долго.
+CMD ["sh", "-c", "( export DB_POOL_MAX=2 PAYLOAD_PROD_MIGRATIONS=0; i=0; until curl -fsS \"http://127.0.0.1:${PORT}/api/health/\" 2>/dev/null | grep -q '\"db\":\"ready\"'; do i=$((i+1)); [ $i -gt 360 ] && { echo \"[seeds] $(date -u +%T) DB not ready after 30 min, skipping\" >&2; exit 1; }; sleep 5; done; echo \"[seeds] $(date -u +%T) start\"; if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi && echo \"[seeds] $(date -u +%T) done\" || echo \"[seeds] $(date -u +%T) failed\" >&2 ) & exec npm run start"]

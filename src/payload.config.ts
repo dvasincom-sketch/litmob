@@ -8,6 +8,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
+import { migrations } from './migrations'
 
 import { Audio } from './collections/Audio'
 import { Books } from './collections/Books'
@@ -76,6 +77,9 @@ export default buildConfig({
     // Схема только через миграции (как в content-box).
     push: false,
     migrationDir: path.resolve(dirname, 'migrations'),
+    // В production миграции применяет сам сервер при старте (см. src/instrumentation.ts).
+    // Сиды запускаются с PAYLOAD_PROD_MIGRATIONS=0, чтобы не делать это параллельно с сервером.
+    prodMigrations: process.env.PAYLOAD_PROD_MIGRATIONS === '0' ? undefined : migrations,
   }),
   sharp,
   plugins: [
