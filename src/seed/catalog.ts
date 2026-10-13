@@ -64,12 +64,24 @@ for (const f of files) {
 
   // Книги автора, которые уже есть (по названию), — чтобы не плодить дубли при повторном запуске.
   const existing = await payload.find({ collection: 'books', where: { authors: { contains: authorId } }, limit: 0, pagination: false, ...o })
-  const byTitle = new Map((existing.docs as unknown as { id: number; title: string }[]).map((b) => [b.title.toLowerCase(), b.id]))
+  type Known = { id: number; ref?: number | null; order?: number | null }
+  const byTitle = new Map<string, Known>(
+    (existing.docs as unknown as { id: number; title: string; series?: { ref?: number | { id: number } | null; order?: number | null } }[]).map((b) => {
+      const ref = b.series?.ref
+      return [b.title.toLowerCase(), { id: b.id, ref: typeof ref === 'object' && ref ? ref.id : ref, order: b.series?.order }]
+    }),
+  )
 
   async function ensureBook(b: BookIn, series?: { id: number; order: number }) {
     const known = byTitle.get(b.title.toLowerCase())
     if (known) {
-      if (series) await payload.update({ collection: 'books', id: known, data: { series: { ref: series.id, order: series.order } } as never, ...o })
+      // Обновляем только если серия реально изменилась: иначе повторный запуск на каждом деплое
+      // делает тысячи лишних update и держит старт контейнера дольше таймаута health-check.
+      if (series && (known.ref !== series.id || known.order !== series.order)) {
+        await payload.update({ collection: 'books', id: known.id, data: { series: { ref: series.id, order: series.order } } as never, ...o })
+        known.ref = series.id
+        known.order = series.order
+      }
       nSkipped++
       return
     }
@@ -88,7 +100,7 @@ for (const f of files) {
       } as never,
       ...o,
     })
-    byTitle.set(b.title.toLowerCase(), (created as { id: number }).id)
+    byTitle.set(b.title.toLowerCase(), { id: (created as { id: number }).id, ref: series?.id, order: series?.order })
     nBooks++
   }
 

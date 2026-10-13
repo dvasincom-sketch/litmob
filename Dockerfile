@@ -20,4 +20,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 CMD cur
 #   у существующих обновляет только связи и спрос, тексты из админки не трогает. Можно держать включённым.
 # CONTENT_ON_START=1 — тексты из content/ в пустые поля и справочный каталог авторов, серий и книг
 #   (content/catalog/). Повторный запуск ничего не дублирует. Можно держать включённым.
-CMD ["sh", "-c", "npm run migrate && if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi && npm run start"]
+# Сиды идут в фоне ПОСЛЕ старта сервера: первый прогон каталога — это ~20 тыс. запросов к БД,
+# с удалённой базой он длится дольше, чем платформа ждёт health-check. Ошибка сида не роняет сайт.
+CMD ["sh", "-c", "npm run migrate || exit 1; ( if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi || echo 'seed failed' >&2 ) & exec npm run start"]
