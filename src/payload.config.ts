@@ -73,6 +73,9 @@ export default buildConfig({
       max: Number(process.env.DB_POOL_MAX || 5),
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000,
+      // Payload держит одно подключение открытым постоянно — серверный таймаут простоя его обрывает
+      // и роняет процесс. Отключаем на уровне сессии, что бы ни стояло у роли в БД.
+      options: '-c idle_session_timeout=0',
     },
     // Схема только через миграции (как в content-box).
     push: false,

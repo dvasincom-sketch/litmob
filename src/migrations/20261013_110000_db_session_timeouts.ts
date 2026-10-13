@@ -7,8 +7,8 @@ import { MigrateDownArgs, MigrateUpArgs, sql } from '@payloadcms/db-postgres'
  *
  * Ставим на роль приложения серверные таймауты (действуют для новых сессий):
  * - tcp_keepalives_*: сервер сам находит мёртвых клиентов примерно за 1,5 минуты;
- * - idle_session_timeout: простаивающая сессия закрывается через 10 минут (пул приложения
- *   закрывает свои простаивающие подключения через 10 секунд, так что живым процессам это не мешает).
+ * (idle_session_timeout здесь был, но ломал постоянное подключение Payload — снят,
+ *  см. 20261013_180000_reset_idle_session_timeout.)
  * Каждая настройка — в отдельном блоке: если хостинг что-то запрещает, миграция не падает.
  */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
@@ -16,7 +16,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     `ALTER ROLE CURRENT_USER SET tcp_keepalives_idle = 60`,
     `ALTER ROLE CURRENT_USER SET tcp_keepalives_interval = 10`,
     `ALTER ROLE CURRENT_USER SET tcp_keepalives_count = 3`,
-    `ALTER ROLE CURRENT_USER SET idle_session_timeout = '10min'`,
   ]) {
     await db.execute(sql.raw(`DO $$ BEGIN EXECUTE '${stmt.replace(/'/g, "''")}'; EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'skip: %', SQLERRM; END $$;`))
   }
