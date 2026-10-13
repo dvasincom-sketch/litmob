@@ -4,6 +4,7 @@ import * as migration_20261006_111453_shelf_follows from './20261006_111453_shel
 import * as migration_20261006_120000_unique_follows from './20261006_120000_unique_follows';
 import * as migration_20261007_090000_seo_h1_templates from './20261007_090000_seo_h1_templates';
 import * as migration_20261007_093800_reviews_and_fejri from './20261007_093800_reviews_and_fejri';
+import * as migration_20261013_110000_db_session_timeouts from './20261013_110000_db_session_timeouts';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261007_093800_reviews_and_fejri.up,
     down: migration_20261007_093800_reviews_and_fejri.down,
-    name: '20261007_093800_reviews_and_fejri'
+    name: '20261007_093800_reviews_and_fejri',
+  },
+  {
+    up: migration_20261013_110000_db_session_timeouts.up,
+    down: migration_20261013_110000_db_session_timeouts.down,
+    name: '20261013_110000_db_session_timeouts',
   },
 ];
