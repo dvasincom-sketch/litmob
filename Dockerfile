@@ -22,4 +22,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 CMD cur
 #   (content/catalog/). Повторный запуск ничего не дублирует. Можно держать включённым.
 # Сиды идут в фоне ПОСЛЕ старта сервера: первый прогон каталога — это ~20 тыс. запросов к БД,
 # с удалённой базой он длится дольше, чем платформа ждёт health-check. Ошибка сида не роняет сайт.
-CMD ["sh", "-c", "npm run migrate || exit 1; ( if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi || echo 'seed failed' >&2 ) & exec npm run start"]
+# Пул сидов — 2 подключения: в базе ~20 слотов, а при деплое старый и новый контейнеры работают одновременно.
+CMD ["sh", "-c", "npm run migrate || exit 1; ( export DB_POOL_MAX=2; if [ \"$SEED_ON_START\" = 1 ]; then npm run seed; fi && if [ \"$CONTENT_ON_START\" = 1 ]; then npm run seed:content && npm run seed:catalog; fi || echo 'seed failed' >&2 ) & exec npm run start"]
