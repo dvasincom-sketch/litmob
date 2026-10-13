@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { SafeRichText as RichText } from '@/components/SafeRichText'
 import type { Book, Collection, Genre, Series, Trope } from '@/payload-types'
 import { BookList } from './BookCard'
 import { Breadcrumbs, type Crumb } from './Breadcrumbs'

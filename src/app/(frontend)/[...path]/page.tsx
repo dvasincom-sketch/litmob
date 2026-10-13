@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { SafeRichText as RichText } from '@/components/SafeRichText'
 import type { Page as PageDoc } from '@/payload-types'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Faq } from '@/components/Faq'

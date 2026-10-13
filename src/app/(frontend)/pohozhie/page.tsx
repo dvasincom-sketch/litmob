@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { SafeRichText as RichText } from '@/components/SafeRichText'
 import type { Author, Book } from '@/payload-types'
 import { Faq } from '@/components/Faq'
 import { PageHero } from '@/components/PageHero'

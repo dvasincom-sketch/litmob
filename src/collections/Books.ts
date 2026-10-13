@@ -120,7 +120,8 @@ export const Books: CollectionConfig = {
             {
               name: 'externalLinks',
               type: 'array',
-              label: 'Где читать у автора',
+              label: 'Где выходит у автора',
+              admin: { description: 'Для редакции. На сайте выводится только название площадки — ссылкой на сторонние сайты не отправляем.' },
               fields: [
                 { name: 'label', type: 'text', required: true, label: 'Площадка' },
                 { name: 'url', type: 'text', required: true, label: 'Ссылка' },

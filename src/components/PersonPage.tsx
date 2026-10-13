@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { platformNames } from '@/lib/links'
 import { Wrap } from './Wrap'
 import type { Metadata } from 'next'
 import type { Book } from '@/payload-types'
@@ -91,7 +92,7 @@ export async function PersonPage({ kind, slug }: { kind: Kind; slug: string }) {
       {(doc.lead || doc.about) && <p className="max-w-2xl text-muted">{doc.lead || doc.about}</p>}
       {doc.voice && <p className="text-sm">Голос: {doc.voice}</p>}
       {Array.isArray(doc.links) && doc.links.length > 0 && (
-        <p className="text-sm">Страницы автора: {doc.links.map((l: any, i: number) => <span key={l.url}>{i > 0 && ', '}<a href={l.url} rel="nofollow noopener" target="_blank">{l.label}</a></span>)}</p>
+        <p className="text-sm text-muted">Публикуется на площадках: {platformNames(doc.links)}</p>
       )}
       {kind === 'narrators' ? (
         <>
@@ -116,7 +117,6 @@ export async function PersonPage({ kind, slug }: { kind: Kind; slug: string }) {
                   url,
                   ...(doc.about || doc.lead ? { description: doc.about || doc.lead } : {}),
                   ...(kind === 'narrators' ? { jobTitle: 'Чтец аудиокниг' } : { jobTitle: 'Писатель' }),
-                  ...(Array.isArray(doc.links) && doc.links.length ? { sameAs: doc.links.map((l: any) => l.url) } : {}),
                 },
                 ...(items.length ? { hasPart: { '@type': 'ItemList', itemListElement: items } } : {}),
               }
@@ -214,7 +214,7 @@ function autoFaq(kind: Kind, name: string, books: Book[], doc: any): { q: string
   ]
   if (fresh.length) out.push({ q: `Какие новинки у автора ${name}?`, a: `Из последних книг: ${fresh.map((b) => `«${b.title}»`).join(', ')}.` })
   if (Array.isArray(doc.links) && doc.links.length)
-    out.push({ q: `Где читать книги автора ${name}?`, a: `Тексты книг автор публикует на площадках: ${doc.links.map((l: any) => l.label).join(', ')}. Ссылки — в начале страницы. Аудиоверсии на Литмобе отмечены пометкой «аудио».` })
+    out.push({ q: `Где читать книги автора ${name}?`, a: `Тексты книг автор публикует на площадках: ${platformNames(doc.links)}. На Литмобе — справка о книгах, циклы по порядку и аудиоверсии, отмеченные пометкой «аудио».` })
   return out
 }
 

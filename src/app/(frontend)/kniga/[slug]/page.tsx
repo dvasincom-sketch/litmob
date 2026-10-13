@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { SafeRichText as RichText } from '@/components/SafeRichText'
 import type { Audio, Media, Author, Book, Narrator, Series, Trope } from '@/payload-types'
 import { BookTile } from '@/components/BookCard'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
@@ -18,6 +18,7 @@ import { SITE_URL } from '@/lib/payload'
 import { bookIndexable, buildMetadata, fitTitle, sentences } from '@/lib/seo'
 import { getViewer, getViewerState } from '@/lib/session'
 import { LITMOB_THEMES } from '@/lib/litmobThemes'
+import { platformNames } from '@/lib/links'
 
 type Props = { params: Promise<{ slug: string }> }
 const objs = <T,>(v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === 'object') : []) as T[]
@@ -40,7 +41,7 @@ function titleFor(b: Book, reference: boolean) {
   const tr = b.isTranslation && b.originalTitle ? ` (${b.originalTitle} на русском)` : ''
   if (reference) {
     const by = authors ? `, ${authors}` : ''
-    return fitTitle(`${b.title}${tr}${by} — о чём книга и где читать`, `${b.title}${by} — о чём книга и где читать`, `${b.title} — о чём книга и где читать`, `${b.title}${by}`, b.title)
+    return fitTitle(`${b.title}${tr}${by} — о чём книга`, `${b.title}${by} — о чём книга`, `${b.title} — о чём книга`, `${b.title}${by}`, b.title)
   }
   const action = b.hasAudio ? 'слушать аудиокнигу' : b.status === 'completed' ? 'читать полностью' : 'читать книгу'
   return fitTitle(
@@ -60,7 +61,7 @@ function descriptionFor(b: Book, chapters: number) {
       `«${b.title}»${authors ? ` — ${authors}` : ''}${year ? `, ${year}` : ''}`,
       b.hook,
       [series ? `Цикл «${series.title}»${b.series?.order ? `, книга ${b.series.order}` : ''}` : null, STATUS[b.status || 'ongoing']].filter(Boolean).join(', '),
-      'Где читать, похожие книги и идея для своего литмоба',
+      'Цикл по порядку, похожие книги и идея для своего литмоба',
     )
   }
   const narr = objs<Narrator>(b.narrators).map((n) => n.name).join(', ')
@@ -109,8 +110,8 @@ export default async function BookPage({ params }: Props) {
   const series = book.series?.ref && typeof book.series.ref === 'object' ? (book.series.ref as Series) : null
   const seriesBooks = series ? await getBooksWhere('series.ref', series.id, 'series.order') : []
   const similar = (await getSimilarBooks(book, 8)) as Book[]
-  // Нет ссылки на саму книгу — ведём на страницу автора на его площадке.
-  const ext = book.externalLinks?.[0] || authors.flatMap((a) => a.links || [])[0]
+  // Где выходит книга — только название площадки, без ссылки (на сторонние сайты не отправляем, см. lib/links.ts).
+  const platform = platformNames(book.externalLinks?.length ? book.externalLinks : authors.flatMap((a) => a.links || []))
   const labels = [book.happyEnding === 'yes' ? 'ХЭ' : null, HEAT[book.heat || 'none'], STATUS[book.status || 'ongoing']].filter(Boolean) as string[]
   const crumbs = [...(tropes[0]?.path ? [{ label: tropes[0].title, href: tropes[0].path }] : []), { label: book.title, href: book.path || `/kniga/${book.slug}/` }]
   const shown = chapters.slice(0, 3)
@@ -153,28 +154,19 @@ export default async function BookPage({ params }: Props) {
         />
         <ShelfButton book={book.id} shelfId={state.shelf?.id ?? null} loggedIn={Boolean(viewer)} returnTo={returnTo} withLabel className={`flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold ${dark ? 'border-white/30 bg-transparent text-white' : 'border-petal bg-white text-rose'}`} />
       </div>
-      {ext && (
-        <a href={ext.url} target="_blank" rel="nofollow noopener" className={`text-sm font-semibold ${dark ? 'text-pink' : 'text-rose'}`}>
-          Читать текст у автора на {ext.label} ↗
-        </a>
-      )}
+      {platform && <span className={`text-sm ${dark ? 'text-blush' : 'text-muted'}`}>Текст книги автор публикует на площадке {platform}.</span>}
     </section>
   )
   const whereCard = (dark: boolean) => (
     <section id="where" className={`flex scroll-mt-20 flex-col gap-3 rounded-2xl p-3.5 md:p-5 ${dark ? 'bg-wine-2 text-white' : 'bg-white shadow-[var(--shadow-card)]'}`}>
-      <span className="font-semibold">Где читать</span>
-      {ext ? (
-        <a href={ext.url} target="_blank" rel="nofollow noopener" className={`rounded-xl px-4 py-3 text-center font-semibold no-underline ${dark ? 'bg-white text-wine' : 'bg-rose text-white'}`}>
-          Читать у автора на {ext.label} ↗
-        </a>
-      ) : (
-        <span className={`text-sm ${dark ? 'text-blush' : 'text-muted'}`}>Книга издаётся на площадке автора. Ссылку добавим, как только автор подтвердит страницу.</span>
-      )}
+      <span className="font-semibold">Справочная карточка</span>
+      <span className={`text-sm ${dark ? 'text-blush' : 'text-muted'}`}>
+        Текста этой книги на Литмобе нет{platform ? ` — автор публикует её на площадке ${platform}` : ''}. Здесь — о чём книга{series ? ', цикл по порядку' : ''}, похожие книги и идея для своей истории.
+      </span>
       <div className="flex flex-wrap items-center gap-2">
+        <a href="#inspire" className={`rounded-xl px-4 py-3 text-center font-semibold no-underline ${dark ? 'bg-white text-wine' : 'bg-rose text-white'}`}>Написать свою историю</a>
         <ShelfButton book={book.id} shelfId={state.shelf?.id ?? null} loggedIn={Boolean(viewer)} returnTo={returnTo} withLabel className={`flex h-11 items-center gap-2 rounded-xl border px-3.5 text-sm font-semibold ${dark ? 'border-white/30 bg-transparent text-white' : 'border-petal bg-white text-rose'}`} />
-        <a href="#inspire" className={`flex h-11 items-center rounded-xl px-3.5 text-sm font-semibold no-underline ${dark ? 'text-pink' : 'text-rose'}`}>Написать свою историю →</a>
       </div>
-      <span className={`text-xs ${dark ? 'text-blush' : 'text-muted'}`}>Литмоб не публикует текст этой книги — здесь справка о ней и ссылка на автора.</span>
     </section>
   )
   const facts = [
@@ -185,6 +177,7 @@ export default async function BookPage({ params }: Props) {
     book.happyEnding === 'yes' ? { k: 'Финал', v: <>Счастливый конец</> } : null,
     book.heat && book.heat !== 'none' ? { k: 'Откровенность', v: <>{HEAT[book.heat]}</> } : null,
     book.isTranslation && book.originalTitle ? { k: 'Оригинал', v: <>{book.originalTitle}</> } : null,
+    platform ? { k: 'Где выходит', v: <>{platform}</> } : null,
   ].filter(Boolean) as { k: string; v: React.ReactNode }[]
   const chapterState = (i: number, c: (typeof chapters)[number]) => (c.isFree || i < free ? { t: 'Бесплатно', cls: 'text-free' } : { t: 'По подписке', cls: 'text-muted' })
 
@@ -356,7 +349,7 @@ export default async function BookPage({ params }: Props) {
 
         {book.mode === 'reference' && !book.claimed && (
           <p className="text-[13px] text-muted">
-            Это справочная страница. Вы автор? <Link href={`/pravoobladatelyam/?book=${book.id}`} className="font-semibold text-rose">Подтвердите страницу</Link> — добавим обложку, ссылку на книгу, а по договору — главы и озвучку.
+            Это справочная страница. Вы автор? <Link href={`/pravoobladatelyam/?book=${book.id}`} className="font-semibold text-rose">Подтвердите страницу</Link> — добавим обложку, а по договору — главы и озвучку на Литмобе.
           </p>
         )}
       </Wrap>
@@ -400,11 +393,7 @@ export default async function BookPage({ params }: Props) {
 
       <div className="fixed inset-x-0 bottom-0 z-20 flex gap-2.5 border-t border-line bg-white px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-2.5 md:hidden">
         {reference ? (
-          ext ? (
-            <a href={ext.url} target="_blank" rel="nofollow noopener" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white no-underline">Где читать ↗</a>
-          ) : (
-            <a href="#inspire" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white no-underline">Написать свою историю</a>
-          )
+          <a href="#inspire" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white no-underline">Написать свою историю</a>
         ) : (
           <a href="#listen" className="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose font-semibold text-white">
             {track ? 'Слушать бесплатно' : book.status === 'ongoing' ? 'Сообщить о проде' : 'Хочу послушать'}

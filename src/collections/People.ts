@@ -29,6 +29,7 @@ export const Authors: CollectionConfig = {
       name: 'links',
       type: 'array',
       label: 'Страницы автора на площадках',
+      admin: { description: 'Для редакции. На сайте выводятся только названия площадок — ссылкой на сторонние сайты не отправляем.' },
       fields: [
         { name: 'label', type: 'text', required: true },
         { name: 'url', type: 'text', required: true },

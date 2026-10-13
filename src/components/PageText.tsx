@@ -1,4 +1,4 @@
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { SafeRichText as RichText } from '@/components/SafeRichText'
 import type { Page } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload'
 import { Faq } from './Faq'
